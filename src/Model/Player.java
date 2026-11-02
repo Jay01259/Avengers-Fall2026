@@ -7,44 +7,101 @@ import java.util.List;
 
 public class Player extends Character {
 
-    List<Item> inventory;
+    Inventory inventory;
     Room currentRoom;
     Weapon equippedWeapon;
     Armor equippedAmor;
-    int currency;
+    int silverCoins;
+    int goldCoins;
+    List<String> visitedRoomsID;
+    boolean gameCompleted;
+    // Check doc to see if player can check which puzzles they have completed
+    // List <String> completedPuzzlesID;
 
-    public Player(String name, int HP, int MaxHP, int attack, int defense, Room startingRoom) {
-        super(name, HP, MaxHP, attack, defense);
-        this.currentRoom = startingRoom;
-        this.inventory = new ArrayList<>();
-        this.equippedWeapon = null;
-        this.equippedAmor = null;
-        this.currency = 0;
+    public Player(String name, int currentHP, int maxHP, int attack, int defense, Inventory inventory,
+                  Room currentRoom, Weapon equippedWeapon, Armor equippedAmor, int silverCoins, int goldCoins,
+                  List<String> visitedRoomsID, boolean gameCompleted) {
+        super(name, currentHP, maxHP, attack, defense);
+        this.inventory = inventory;
+        this.currentRoom = currentRoom;
+        this.equippedWeapon = equippedWeapon;
+        this.equippedAmor = equippedAmor;
+        this.silverCoins = silverCoins;
+        this.goldCoins = goldCoins;
+        this.visitedRoomsID = visitedRoomsID;
+        this.gameCompleted = gameCompleted;
+    }
+
+    public Inventory getInventory() {
+        // Implement
     }
 
     public Room getCurrentRoom() {
-        return currentRoom;
+        // Implement
     }
 
-    public boolean moveRooms(String direction, List<Room> rooms) {
-        Room current = rooms.get(currentRoom - 1);
-        int nextRoom = 0;
+    public boolean pickUpItem(Item item) {
+        // Implement
+    }
 
-        if (direction.equalsIgnoreCase("North")) {
-            nextRoom = current.getNorth();
-        } else if (direction.equalsIgnoreCase("East")) {
-            nextRoom = current.getEast();
-        } else if (direction.equalsIgnoreCase("South")) {
-            nextRoom = current.getSouth();
-        } else if (direction.equalsIgnoreCase("West")) {
-            nextRoom = current.getWest();
-        }
+    public boolean dropItem(Item item) {
+        // Implement
+    }
 
-        if (nextRoom == 0) {
-            return false;
-        }
+    public boolean useItem(Item item) {
+        // Implement
+    }
 
-        currentRoom = nextRoom;
-        return true;
+    public boolean equipItem(Item item) {
+        // Implement
+    }
+
+    public boolean buyItem(String itemID, NPC npc) {
+        // Implement
+    }
+
+    public boolean sellItem(String itemID, NPC npc) {
+        // Implement
+    }
+
+    public void moveTo(Room room) {
+        // Implement
+    }
+
+    public void markRoomVisited(String roomID) {
+        // Implement
+    }
+
+    public boolean hasVisitedRoom(String roomID) {
+        // Implement
+    }
+
+    public int getSilverCoins() {
+        return silverCoins
+    }
+
+    public int getGoldCoins(){
+        return goldCoins;
+    }
+
+    public void setSilverCoins(int amount){
+        // Implement
+    }
+
+    public void setGoldCoins(int amount){
+        // Implement
+    }
+
+    // Convert gold coins to silver and check whether the player has enough coins to spend
+    public boolean spendCoins(int amountInSilver){
+        // Implement
+    }
+
+    public boolean isGameCompleted() {
+        return gameCompleted;
+    }
+
+    public void setGameCompleted(boolean gameCompleted) {
+        // Implement
     }
 }

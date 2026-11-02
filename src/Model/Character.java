@@ -4,17 +4,16 @@ import java.util.ArrayList;
 
 public abstract class Character {
 
-    String ID;
     String name;
-    int HP;
-    int MaxHP;
+    int currentHP;
+    int maxHP;
     int attack;
     int defense;
 
-    public Character(String name, int hp, int maxHP, int attack, int defense) {
+    public Character(String name, int currentHP, int maxHP, int attack, int defense) {
         this.name = name;
-        this.HP = hp;
-        this.MaxHP = maxHP;
+        this.currentHP = currentHP;
+        this.maxHP = maxHP;
         this.attack = attack;
         this.defense = defense;
     }
@@ -23,12 +22,28 @@ public abstract class Character {
         return name;
     }
 
-    public int getHP() {
-        return HP;
+    public boolean isAlive(){
+        //Implement
+    }
+    public int heal(int amount){;
+        // Implement
     }
 
-    public void setHP(int HP) {
-        this.HP = HP;
+    public int getCurrentHP() {
+        return currentHP;
+    }
+
+    public void setCurrentHP(int HP) {
+        this.currentHP = HP;
+    }
+
+    public int getMaxHP() {
+        return maxHP;
+    }
+
+    public int getAttack() {
+        // Use if statements to check whether the character has a weapon equipped and return the appropriate attack value
+
     }
 
     public int getDefense() {
