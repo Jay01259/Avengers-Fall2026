@@ -1,7 +1,9 @@
 package Controller;
 
 public class GameWorld {
-    Map<String, Room> rooms;
+    private String startRoomID ="R01";
+    private Map<String, Room> rooms;
+    private Map<String, Puzzle> puzzles;
 
     public Room getRooms(String roomID) {
         return rooms;
