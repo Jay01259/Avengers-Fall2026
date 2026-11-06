@@ -15,8 +15,11 @@ public class Player extends Character {
     private int goldCoins;
     private List<String> visitedRoomsIDs;
     private boolean gameCompleted;
-    // Check doc to see if player can check which puzzles they have completed
-    // List <String> completedPuzzlesID;
+    /*
+    Check doc to see if player can check which puzzles they have completed without being
+    in the room with the puzzle. If so, we can add a list of completed puzzles to the player class.
+    List <String> completedPuzzlesID;
+    */
 
     public Player(String name, int currentHP, int maxHP, int attack, int defense, Inventory inventory,
                   Room currentRoom, Weapon equippedWeapon, Armor equippedArmor, int silverCoins, int goldCoins,

@@ -1,4 +1,4 @@
-package Controller;
+package Model;
 
 public class GameWorld {
     private String startRoomID ="R01";
