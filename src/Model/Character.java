@@ -1,14 +1,12 @@
 package Model;
 
-import java.util.ArrayList;
-
 public abstract class Character {
 
-    String name;
-    int currentHP;
-    int maxHP;
-    int attack;
-    int defense;
+    private String name;
+    private int currentHP;
+    private int maxHP;
+    private int attack;
+    private int defense;
 
     public Character(String name, int currentHP, int maxHP, int attack, int defense) {
         this.name = name;
@@ -23,18 +21,35 @@ public abstract class Character {
     }
 
     public boolean isAlive(){
-        //Implement
+        return currentHP > 0;
     }
-    public int heal(int amount){;
-        // Implement
+
+    public int heal(int amount){
+        // returns the amount of HP restored, or 0 if no HP was restored
+        // use the return value to tell user how much HP was restored
+        if (amount <= 0 || currentHP >= maxHP || !isAlive()){
+            return 0;
+        }
+        int previousHP = currentHP;
+        currentHP += amount;
+        if (currentHP > maxHP) {
+            currentHP = maxHP;
+        }
+        return currentHP - previousHP;
     }
 
     public int getCurrentHP() {
         return currentHP;
     }
 
-    public void setCurrentHP(int HP) {
-        this.currentHP = HP;
+    public void setCurrentHP(int newHP) {
+        if (newHP > maxHP) {
+            currentHP = maxHP;
+        } else if (newHP < 0) {
+            currentHP = 0;
+        } else {
+            currentHP = newHP;
+        }
     }
 
     public int getMaxHP() {
@@ -42,15 +57,18 @@ public abstract class Character {
     }
 
     public int getAttack() {
-        // Use if statements to check whether the character has a weapon equipped and return the appropriate attack value
-
+        return attack;
     }
 
     public int getDefense() {
         return defense;
     }
 
-    public void setDefense(int defense) {
-        this.defense = defense;
+    public void setDefense(int newDefense) {
+        if (newDefense < 0){
+            defense = 0;
+        } else {
+            defense = newDefense;
+        }
     }
 }
