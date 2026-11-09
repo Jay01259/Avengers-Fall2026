@@ -17,9 +17,19 @@ public class GameEngine {
         gameEngine.startGame();
     }
 
-    // Uses GameView to ask the player if they want to start a new game or load a saved game.
     public void startGame() {
         view.displayMessage("Would you like to start a new game or load a saved game?");
+        view.displayMessage("Enter 'new' to start a new game or 'load' to load a saved game.");
+        view.displayMessage("Your choice: ");
+        String startGame = scanner.nextLine();
+        if (startGame.equalsIgnoreCase("new")) {
+            startNewGame();
+        } else if (startGame.equalsIgnoreCase("load")) {
+            loadGame("");
+        } else {
+            view.displayMessage("Invalid input. Please enter 'new' or 'load'.");
+            startGame();
+        }
     }
 
     public void startNewGame() {
