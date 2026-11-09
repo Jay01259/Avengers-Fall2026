@@ -7,37 +7,42 @@ import java.util.List;
 
 public class Player extends Character {
 
-    Inventory inventory;
-    Room currentRoom;
-    Weapon equippedWeapon;
-    Armor equippedAmor;
-    int silverCoins;
-    int goldCoins;
-    List<String> visitedRoomsID;
-    boolean gameCompleted;
-    // Check doc to see if player can check which puzzles they have completed
-    // List <String> completedPuzzlesID;
+    private Inventory inventory;
+    private Room currentRoom;
+    private Weapon equippedWeapon;
+    private Armor equippedArmor;
+    private int silverCoins;
+    private int goldCoins;
+    private List<String> visitedRoomsIDs;
+    private boolean gameCompleted;
+
+    /*
+    Check doc to see if player can check which puzzles they have completed without being
+    in the room with the puzzle. If so, we can add a list of completed puzzles to the player class.
+
+    private List<String> completedPuzzlesID;
+    */
 
     public Player(String name, int currentHP, int maxHP, int attack, int defense, Inventory inventory,
-                  Room currentRoom, Weapon equippedWeapon, Armor equippedAmor, int silverCoins, int goldCoins,
-                  List<String> visitedRoomsID, boolean gameCompleted) {
+                  Room currentRoom, Weapon equippedWeapon, Armor equippedArmor, int silverCoins,
+                  int goldCoins, List<String> visitedRoomsIDs, boolean gameCompleted) {
         super(name, currentHP, maxHP, attack, defense);
         this.inventory = inventory;
         this.currentRoom = currentRoom;
         this.equippedWeapon = equippedWeapon;
-        this.equippedAmor = equippedAmor;
+        this.equippedArmor = equippedArmor;
         this.silverCoins = silverCoins;
         this.goldCoins = goldCoins;
-        this.visitedRoomsID = visitedRoomsID;
+        this.visitedRoomsIDs = visitedRoomsIDs == null ? new ArrayList<>() : new ArrayList<>(visitedRoomsIDs);
         this.gameCompleted = gameCompleted;
     }
 
     public Inventory getInventory() {
-        // Implement
+        return inventory;
     }
 
     public Room getCurrentRoom() {
-        // Implement
+        return currentRoom;
     }
 
     public boolean pickUpItem(Item item) {
@@ -69,15 +74,17 @@ public class Player extends Character {
     }
 
     public void markRoomVisited(String roomID) {
-        // Implement
+        if (roomID != null && !visitedRoomsIDs.contains(roomID)){
+            visitedRoomsIDs.add(roomID);
+        }
     }
 
     public boolean hasVisitedRoom(String roomID) {
-        // Implement
+        return roomID != null && visitedRoomsIDs.contains(roomID);
     }
 
     public int getSilverCoins() {
-        return silverCoins
+        return silverCoins;
     }
 
     public int getGoldCoins(){
@@ -85,16 +92,33 @@ public class Player extends Character {
     }
 
     public void setSilverCoins(int amount){
-        // Implement
+        if (amount >= 0){
+            this.silverCoins = amount;
+        }
     }
 
     public void setGoldCoins(int amount){
-        // Implement
+        if (amount >= 0){
+            this.goldCoins = amount;
+        }
     }
 
-    // Convert gold coins to silver and check whether the player has enough coins to spend
     public boolean spendCoins(int amountInSilver){
-        // Implement
+        if (amountInSilver < 0){
+            return false;
+        }
+
+        int totalSilver = silverCoins + (goldCoins * 100);
+
+        if (totalSilver < amountInSilver){
+            return false;
+        }
+
+        totalSilver -= amountInSilver;
+
+        goldCoins = totalSilver / 100;
+        silverCoins = totalSilver % 100;
+        return true;
     }
 
     public boolean isGameCompleted() {
@@ -102,6 +126,11 @@ public class Player extends Character {
     }
 
     public void setGameCompleted(boolean gameCompleted) {
-        // Implement
+        this.gameCompleted = gameCompleted;
+    }
+
+    @Override
+    public int getDefense(){
+        return super.getDefense() + (equippedArmor != null ? equippedArmor.getDefenseBonus() : 0);
     }
 }

@@ -1,3 +1,5 @@
+package Model;
+
 public class Lever {
     private String leverID;
     private String displayName;
