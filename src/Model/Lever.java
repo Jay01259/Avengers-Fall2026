@@ -41,4 +41,8 @@ public class Lever {
     private static String toDisplayName(String id) {
         return id.replaceAll("([a-z])([A-Z])", "$1 $2");
     }
+
+    public void setOn(boolean isOn) {
+        this.isOn = isOn;
+    }
 }

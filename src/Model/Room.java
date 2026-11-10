@@ -32,7 +32,24 @@ public class Room {
         this.south = south;
         this.west = west;
     }
+
+
+    public List<Item> getItems() {
+        return items;
     }
+
+    public List<Puzzle> getPuzzles() {
+        return puzzles;
+    }
+
+    public List<NPC> getNPCs() {
+        return npcs;
+    }
+
+    public List<Enemy> getEnemies() {
+        return enemies;
+    }
+
 
     public String getRoomID() {
         return roomID;

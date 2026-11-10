@@ -14,13 +14,11 @@ import java.io.File;
 public class DataLoader {
 
     private String dataDirectory;
+    private String saveDirectory;
 
-    public DataLoader(String dataDirectory) {
+    public DataLoader(String dataDirectory, String saveDirectory) {
         this.dataDirectory = dataDirectory;
-    }
-
-    public GameWorld loadGameWorld(){
-
+        this.saveDirectory = saveDirectory;
     }
 
     public List<Room> loadRooms(){
@@ -38,7 +36,6 @@ public class DataLoader {
     public List<String> loadDialogue(){
 
     }
-
 
     public List<Puzzle> loadPuzzles() {
 
@@ -104,22 +101,25 @@ public class DataLoader {
                         rewardItems.put(itemID, quantity);
                     }
                 }
-
                 Puzzle puzzle = new Puzzle(puzzleID, name, roomID, description, lockedDescription, solveText,
                         leverIDs, solution, requiredItemID, rewardItems);
                 puzzles.add(puzzle);
             }
-
         } catch (IOException e) {
             view.displayMessage("Error loading puzzles: " + e.getMessage());
         }
-
         return puzzles;
     }
 
 
-    // If a player is loading a saved game, this method will load the game memory from the save file.
-    public GameMemory restoreGame(){
+
+    // Saves the current game state to a text file.
+    public void saveGame(GameMemory memory) {
+
+    }
+
+    // Restores a saved game from a text file.
+    public GameMemory restoreGame(String saveName) {
 
     }
 }
