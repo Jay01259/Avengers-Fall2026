@@ -5,9 +5,9 @@ public class Lever {
     private String displayName;
     private boolean isOn;
 
-    public Lever(String leverID) {
+    public Lever(String leverID, String displayName) {
         this.leverID = leverID;
-        this.displayName = toDisplayName(leverID);
+        this.displayName = displayName;
         this.isOn = false;
     }
 
@@ -32,11 +32,16 @@ public class Lever {
     }
 
     public String getStateName() {
-        return isOn ? "ON" : "OFF";
+        return isOn ? "on" : "off";
     }
 
     public boolean matches(String typedName) {
-        return displayName.equals(typedName);
+        String typed = typedName.toLowerCase().replace(" ", "");
+        String id = leverID.toLowerCase();
+        if (typed.isEmpty()) {
+            return false;
+        }
+        return id.startsWith(typed);
     }
     private static String toDisplayName(String id) {
         return id.replaceAll("([a-z])([A-Z])", "$1 $2");

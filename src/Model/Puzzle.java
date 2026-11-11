@@ -69,6 +69,13 @@ public class Puzzle {
     public void setCompleted(boolean completed) {
         this.isCompleted = completed;
     }
+    public String getDescription() {
+        return description;
+    }
+
+    public String getLockedDescription() {
+        return lockedDescription;
+    }
 
     public String display(boolean hasRequiredItem) {
         if (!hasRequiredItem && lockedDescription != null) {
