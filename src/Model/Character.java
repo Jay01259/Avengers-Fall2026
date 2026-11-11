@@ -65,10 +65,6 @@ public abstract class Character {
     }
 
     public void setDefense(int newDefense) {
-        if (newDefense < 0){
-            defense = 0;
-        } else {
-            defense = newDefense;
-        }
+        defense = newDefense;
     }
 }

@@ -37,12 +37,11 @@ public class Player extends Character {
         this.gameCompleted = gameCompleted;
     }
 
+
+
+    //Inventory Management Methods
     public Inventory getInventory() {
         return inventory;
-    }
-
-    public Room getCurrentRoom() {
-        return currentRoom;
     }
 
     public boolean pickUpItem(Item item) {
@@ -53,12 +52,38 @@ public class Player extends Character {
         // Implement
     }
 
+    public String inspectItem(Item item) {
+        // Implement
+    }
+
     public boolean useItem(Item item) {
         // Implement
     }
 
+    // Use if/else statements to check if the item is a weapon or armor, and then equip it accordingly.
     public boolean equipItem(Item item) {
         // Implement
+    }
+
+    // Use if/else statements to check if the item is a weapon or armor, and then unequip it accordingly.
+    public boolean unequipItem(Item item) {
+        // Implement
+    }
+
+    public Weapon getEquippedWeapon() {
+        return equippedWeapon;
+    }
+
+    public void setEquippedWeapon(Weapon equippedWeapon) {
+        this.equippedWeapon = equippedWeapon;
+    }
+
+    public Armor getEquippedArmor() {
+        return equippedArmor;
+    }
+
+    public void setEquippedArmor(Armor equippedArmor) {
+        this.equippedArmor = equippedArmor;
     }
 
     public boolean buyItem(String itemID, NPC npc) {
@@ -67,6 +92,17 @@ public class Player extends Character {
 
     public boolean sellItem(String itemID, NPC npc) {
         // Implement
+    }
+
+
+
+    // Room Methods
+    public Room getCurrentRoom() {
+        return currentRoom;
+    }
+
+    public void setCurrentRoom(Room room) {
+        this.currentRoom = room;
     }
 
     public void moveTo(Room room) {
@@ -83,6 +119,15 @@ public class Player extends Character {
         return roomID != null && visitedRoomsIDs.contains(roomID);
     }
 
+    public List<String> getVisitedRoomsIDs() {
+        return new ArrayList<>(visitedRoomsIDs);
+    }
+
+    public void setVisitedRoomsIDs(List<String> visitedRoomsIDs) {
+        this.visitedRoomsIDs = visitedRoomsIDs == null ? new ArrayList<>() : new ArrayList<>(visitedRoomsIDs);
+    }
+
+    // Currency Methods
     public int getSilverCoins() {
         return silverCoins;
     }
@@ -121,16 +166,14 @@ public class Player extends Character {
         return true;
     }
 
+
+
+    // Game Completion Methods
     public boolean isGameCompleted() {
         return gameCompleted;
     }
 
     public void setGameCompleted(boolean gameCompleted) {
         this.gameCompleted = gameCompleted;
-    }
-
-    @Override
-    public int getDefense(){
-        return super.getDefense() + (equippedArmor != null ? equippedArmor.getDefenseBonus() : 0);
     }
 }
