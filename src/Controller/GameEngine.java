@@ -63,6 +63,7 @@ public class GameEngine {
 
         // Create the player's inventory.
 
+
         // Initialize the player with their starting stats and inventory.
 
         // Mark the starting room as visited.
