@@ -1,12 +1,9 @@
 package Kelvin;
 
 public class Weapon extends Item{
-
     private int damage;
     private int durability;
     int CurrentUses;
-    private String altskill;
-
 
 
     public Weapon(String name, String description, int value, int damage) {
@@ -14,7 +11,7 @@ public class Weapon extends Item{
         this.damage = damage;
         this.durability = 100; // Example initial durability
         this.CurrentUses = 0;
-        this.altskill = "None"; // Example initial alt skill
+        // this.altskill = "None"; // Example initial alt skill
     }
 
     public int getDamage() {
