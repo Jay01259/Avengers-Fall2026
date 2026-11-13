@@ -1,38 +1,57 @@
 package Kelvin;
 
 public class Armor extends Item {
-    private int defenseStats;
-    private int durability;
-    private int hitcounter;
+    private int defenseBonus;
+    private int durabilityLimit;
+    private int hitsTakenCounter;
 
-    public Armor(String name, String description, int value, int defenseStats) {
-        super(name, description, value);
-        this.defenseStats = defenseStats;
-        this.durability = 100; // Example initial durability
-        this.hitcounter = 0;
+    public Armor(String id, String name, String description, int valueSilver,
+                 int defenseBonus, int durabilityLimit) {
+        super(id, name, description, valueSilver);
+        this.defenseBonus = defenseBonus;
+        this.durabilityLimit = durabilityLimit;
+        this.hitsTakenCounter = 0;
+        setStackable(false);
     }
 
-    public int getDefenseStats() {
-        return defenseStats;
+    public int getDefenseBonus() {
+        return defenseBonus;
     }
 
-    public void setDefenseStats(int defenseStats) {
-        this.defenseStats = defenseStats;
+    public void setDefenseBonus(int defenseBonus) {
+        this.defenseBonus = defenseBonus;
     }
 
-    public int getDurability() {
-        return durability;
+    public int getDurabilityLimit() {
+        return durabilityLimit;
     }
 
-    public void setDurability(int durability) {
-        this.durability = durability;
+    public void setDurabilityLimit(int durabilityLimit) {
+        this.durabilityLimit = durabilityLimit;
     }
 
-    public int getHitcounter() {
-        return hitcounter;
+    public int getHitsTakenCounter() {
+        return hitsTakenCounter;
     }
 
-    public void setHitcounter(int hitcounter) {
-        this.hitcounter = hitcounter;
+    public void setHitsTakenCounter(int hitsTakenCounter) {
+        this.hitsTakenCounter = hitsTakenCounter;
+    }
+
+    public void takeHit() {
+        if (durabilityLimit > 0) {
+            hitsTakenCounter++;
+        }
+    }
+
+    public boolean isInfiniteDurability() {
+        return durabilityLimit < 0;
+    }
+
+    public boolean isBroken() {
+        if (isInfiniteDurability()) {
+            return false;
+        }
+        return hitsTakenCounter >= durabilityLimit;
     }
 }

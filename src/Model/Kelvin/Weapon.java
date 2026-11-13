@@ -1,39 +1,57 @@
 package Kelvin;
 
-public class Weapon extends Item{
-    private int damage;
-    private int durability;
-    int CurrentUses;
+public class Weapon extends Item {
+    private int attackBonus;
+    private int durabilityLimit;
+    private int attackCounter;
 
-
-    public Weapon(String name, String description, int value, int damage) {
-        super(name, description, value);
-        this.damage = damage;
-        this.durability = 100; // Example initial durability
-        this.CurrentUses = 0;
-        // this.altskill = "None"; // Example initial alt skill
+    public Weapon(String id, String name, String description, int valueSilver,
+                  int attackBonus, int durabilityLimit) {
+        super(id, name, description, valueSilver);
+        this.attackBonus = attackBonus;
+        this.durabilityLimit = durabilityLimit;
+        this.attackCounter = 0;
+        setStackable(false);
     }
 
-    public int getDamage() {
-        return damage;
+    public int getAttackBonus() {
+        return attackBonus;
     }
 
-    public void setDamage(int damage) {
-        this.damage = damage;
+    public void setAttackBonus(int attackBonus) {
+        this.attackBonus = attackBonus;
     }
 
-    public int getDurability() {
-        return durability;
+    public int getDurabilityLimit() {
+        return durabilityLimit;
     }
 
-    public void setDurability(int durability) {
-        this.durability = durability;
+    public void setDurabilityLimit(int durabilityLimit) {
+        this.durabilityLimit = durabilityLimit;
     }
-    public void IncrementUse() {
-        this.CurrentUses++;
+
+    public int getAttackCounter() {
+        return attackCounter;
     }
+
+    public void setAttackCounter(int attackCounter) {
+        this.attackCounter = attackCounter;
+    }
+
+    public void useTurn() {
+        if (durabilityLimit > 0) {
+            attackCounter++;
+        }
+    }
+
+    public boolean isInfiniteDurability() {
+        return durabilityLimit < 0;
+    }
+
     public boolean isBroken() {
-        return this.durability<=this.CurrentUses;
+        if (isInfiniteDurability()) {
+            return false;
+        }
+        return attackCounter >= durabilityLimit;
     }
-
 }
