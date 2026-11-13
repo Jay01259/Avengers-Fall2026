@@ -39,6 +39,17 @@ public class GameWorld {
         }
         return null;
     }
+    public Room getRoomByName(String roomName) {
+        if (roomName == null) {
+            return null;
+        }
+        for (Room room : rooms) {
+            if (room.getName().equalsIgnoreCase(roomName.trim())) {
+                return room;
+            }
+        }
+        return null;
+    }
 
     public Room getStartRoom() {
         return getRoomByID(startRoomID);
@@ -74,7 +85,18 @@ public class GameWorld {
         return getRoomByID(nextRoomID);
     }
 
-    // Might have to change (Look at Room class)
+    public Room getVisitRoom(Room currentRoom, String roomName) {
+        Room target = getRoomByName(roomName);
+        if (target == null || !currentRoom.canVisit(target.getRoomID())) {
+            return null;
+        }
+        return target;
+    }
+    public Room getLeaveRoom(Room currentRoom) {
+        return getRoomByID(currentRoom.getLeaveTo());
+    }
+
+
     public boolean isRoomUnlocked(Room room, Player player) {
 
         if (room == null || player == null) {
@@ -86,6 +108,7 @@ public class GameWorld {
     public List<Room> getRooms() {
         return rooms;
     }
+
 
 
 
