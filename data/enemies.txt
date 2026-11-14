@@ -1,0 +1,21 @@
+# One enemy per line, using these 10 fields:
+# enemyID|name|description|maxHP|attack|defense|boss|silverDrop|goldDrop|itemDrops
+#
+# boss is true or false.
+# itemDrops is - for none, or itemID:quantity,itemID:quantity.
+#
+# Replace every placeholder with the team's actual values,
+# then remove the leading # from that record:
+#
+# <enemyID>|<name>|<description>|<maxHP>|<attack>|<defense>|<boss>|<silverDrop>|<goldDrop>|<itemDrops>
+#
+# Enemy names stated in your design:
+# Mutated Falcon
+# Thief
+# CDU Guard
+# Snapping Tortoise
+# Mutated Black Widow
+# Phantom Walker
+# Father of Beasts
+#
+# The design mentions eight enemies but does not name the eighth.
