@@ -1,4 +1,4 @@
-package Kelvin;
+package Model;
 
 public class KeyItem extends Item {
     private String roomId;

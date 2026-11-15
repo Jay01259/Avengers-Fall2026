@@ -96,7 +96,7 @@ public class GameEngine {
         }
         if (startingRoom == null) {
             startingRoom = new Room("R01", "Player's Room", "Your room is a modest student chamber in the Caine Drux University dormitory.",
-                    new java.util.ArrayList<>(), new java.util.ArrayList<>(), new java.util.ArrayList<>(),
+                    new java.util.ArrayList<>(), new java.util.ArrayList<>(), /*new java.util.ArrayList<>(), */
                     new java.util.ArrayList<>(), null, null, null, null);
             gameWorld.addRoom(startingRoom);
         }
@@ -153,11 +153,11 @@ public class GameEngine {
 
         // --- No-arg commands ---
         switch (upper) {
-            case "HELP" -> {
+            case "HELP" : {
                 view.displayHelp();
                 return;
             }
-            case "EXITS" -> {
+            case "EXITS" : {
                 java.util.List<String> exits = new java.util.ArrayList<>();
 
                 if (currentRoom.getNorth() != null && !currentRoom.getNorth().isBlank()) exits.add("North - " + currentRoom.getNorth());
@@ -176,15 +176,15 @@ public class GameEngine {
                 view.displayExits(exits);
                 return;
             }
-            case "INVENTORY" -> {
+            case "INVENTORY" : {
                 view.displayInventory(player.getInventory(), false);
                 return;
             }
-            case "CHECK HEALTH" -> {
+            case "CHECK HEALTH" : {
                 view.displayHealth(player);
                 return;
             }
-            case "DISPLAY" -> {
+            case "DISPLAY" : {
                 Puzzle puzzle = gameWorld.getPuzzleInRoom(currentRoom);
                 if (puzzle == null) {
                     view.displayMessage("You are not in a Puzzle Room.");
@@ -198,7 +198,7 @@ public class GameEngine {
                 view.displayPuzzle(puzzle, hasRequiredItem);
                 return;
             }
-            case "RESET" -> {
+            case "RESET" : {
                 Puzzle puzzle = gameWorld.getPuzzleInRoom(currentRoom);
                 if (puzzle == null) {
                     view.displayMessage("You are not in a Puzzle Room.");
@@ -208,7 +208,7 @@ public class GameEngine {
                 view.displayMessage(puzzle.reset(currentRoom.getName()));
                 return;
             }
-            case "SOLVE" -> {
+            case "SOLVE" : {
                 Puzzle puzzle = gameWorld.getPuzzleInRoom(currentRoom);
                 if (puzzle == null) {
                     view.displayMessage("You are not in a Puzzle Room.");
@@ -227,7 +227,7 @@ public class GameEngine {
                 }
                 return;
             }
-            case "OPEN CHEST" -> {
+            case "OPEN CHEST" : {
                 StorageChest chest = currentRoom.getChest();
                 if (chest == null) {
                     view.displayMessage("There is no chest in this room.");
@@ -236,7 +236,7 @@ public class GameEngine {
                 }
                 return;
             }
-            case "CLOSE CHEST" -> {
+            case "CLOSE CHEST" : {
                 StorageChest chest = currentRoom.getChest();
                 if (chest == null) {
                     view.displayMessage("There is no chest in this room.");
@@ -245,7 +245,7 @@ public class GameEngine {
                 }
                 return;
             }
-            case "LEAVE" -> {
+            case "LEAVE" : {
                 Room leaveRoom = gameWorld.getLeaveRoom(currentRoom);
                 if (leaveRoom == null) {
                     view.displayMessage("You cannot leave this room using that command.");
@@ -262,34 +262,39 @@ public class GameEngine {
                 view.displayRoom(leaveRoom);
                 return;
             }
-            case "QUIT" -> {
+            case "QUIT" : {
                 quitGame();
                 return;
             }
-            case "SAVE" -> {
+            case "SAVE" : {
                 saveGame();
                 return;
             }
-            case "LOAD" -> {
+            case "LOAD" : {
                 loadGame();
                 return;
             }
-            case "NORTH", "N" -> {
+
+            case "NORTH":
+            case "N":
                 movePlayer("NORTH");
                 return;
-            }
-            case "SOUTH", "S" -> {
+
+            case "SOUTH":
+            case "S":
                 movePlayer("SOUTH");
                 return;
-            }
-            case "EAST", "E" -> {
+
+            case "EAST":
+            case "E":
                 movePlayer("EAST");
                 return;
-            }
-            case "WEST", "W" -> {
+
+            case "WEST":
+            case "W":
                 movePlayer("WEST");
                 return;
-            }
+
         }
 
         // --- Commands with args ---
@@ -297,8 +302,9 @@ public class GameEngine {
         String action = parts[0].toUpperCase();
         String argument = parts.length > 1 ? parts[1].trim() : "";
 
+
         switch (action) {
-            case "VISIT" -> {
+            case "VISIT": {
                 if (argument.isEmpty()) {
                     view.displayMessage("Visit where?");
                     return;
@@ -318,21 +324,26 @@ public class GameEngine {
                 player.setCurrentRoom(target);
                 player.markRoomVisited(target.getRoomID());
                 view.displayRoom(target);
+                return;
             }
-            case "INSPECT" -> {
+
+            case "INSPECT": {
                 if (argument.isEmpty()) {
                     view.displayMessage("Inspect what?");
                     return;
                 }
 
-                if (argument.equalsIgnoreCase("room") || argument.equalsIgnoreCase(currentRoom.getName())) {
+                if (argument.equalsIgnoreCase("room") ||
+                        argument.equalsIgnoreCase(currentRoom.getName())) {
                     view.displayMessage(currentRoom.inspect());
                     return;
                 }
 
                 if (currentBattle != null && !currentBattle.isOver()) {
                     Enemy battleEnemy = currentBattle.getEnemy();
-                    if (argument.equalsIgnoreCase("monster") || argument.equalsIgnoreCase("enemy") || argument.equalsIgnoreCase(battleEnemy.getName())) {
+                    if (argument.equalsIgnoreCase("monster") ||
+                            argument.equalsIgnoreCase("enemy") ||
+                            argument.equalsIgnoreCase(battleEnemy.getName())) {
                         view.displayEnemyStats(battleEnemy, battleEnemy.getStatusHint());
                         return;
                     }
@@ -351,8 +362,10 @@ public class GameEngine {
                 }
 
                 view.displayMessage("Item cannot be inspected.");
+                return;
             }
-            case "PICKUP" -> {
+
+            case "PICKUP": {
                 if (argument.isEmpty()) {
                     view.displayMessage("There is nothing currently available to be picked up");
                     return;
@@ -369,8 +382,10 @@ public class GameEngine {
                 } else {
                     view.displayMessage("cannot pick up, inventory is full. You must drop something first");
                 }
+                return;
             }
-            case "DROP" -> {
+
+            case "DROP": {
                 if (argument.isEmpty()) {
                     view.displayMessage("Drop what?");
                     return;
@@ -387,8 +402,10 @@ public class GameEngine {
                 } else {
                     view.displayMessage("You cannot drop that item.");
                 }
+                return;
             }
-            case "USE" -> {
+
+            case "USE": {
                 if (argument.isEmpty()) {
                     view.displayMessage("Use what?");
                     return;
@@ -428,8 +445,10 @@ public class GameEngine {
                 } else {
                     view.displayMessage("Used " + invItem.getName() + ".");
                 }
+                return;
             }
-            case "EQUIP" -> {
+
+            case "EQUIP": {
                 if (argument.isEmpty()) {
                     view.displayMessage("Equip what?");
                     return;
@@ -446,8 +465,10 @@ public class GameEngine {
                 } else {
                     view.displayMessage("That item cannot be equipped.");
                 }
+                return;
             }
-            case "PULL" -> {
+
+            case "PULL": {
                 if (argument.isEmpty()) {
                     view.displayMessage("Pull which lever?");
                     return;
@@ -460,15 +481,27 @@ public class GameEngine {
                 }
 
                 String requiredItemId = puzzle.getRequiredItemID();
-                boolean hasRequiredItem = requiredItemId == null || requiredItemId.isBlank()
-                        || player.getInventory().getItem(requiredItemId) != null;
+                boolean hasRequiredItem = requiredItemId == null ||
+                        requiredItemId.isBlank() ||
+                        player.getInventory().getItem(requiredItemId) != null;
 
                 view.displayMessage(puzzle.pullLever(argument, hasRequiredItem));
+                return;
             }
-            case "TALK" -> view.displayMessage("Talk command is not available yet.");
-            case "BUY" -> view.displayMessage("Buy command is not available yet.");
-            case "SELL" -> view.displayMessage("Sell command is not available yet.");
-            case "STORE" -> {
+
+            case "TALK":
+                view.displayMessage("Talk command is not available yet.");
+                return;
+
+            case "BUY":
+                view.displayMessage("Buy command is not available yet.");
+                return;
+
+            case "SELL":
+                view.displayMessage("Sell command is not available yet.");
+                return;
+
+            case "STORE": {
                 StorageChest chest = currentRoom.getChest();
                 if (chest == null || !chest.isOpen()) {
                     view.displayMessage("The chest is not open.");
@@ -492,8 +525,10 @@ public class GameEngine {
                 } else {
                     view.displayMessage("Unable to store item.");
                 }
+                return;
             }
-            case "RETRIEVE" -> {
+
+            case "RETRIEVE": {
                 StorageChest chest = currentRoom.getChest();
                 if (chest == null || !chest.isOpen()) {
                     view.displayMessage("The chest is not open.");
@@ -517,8 +552,10 @@ public class GameEngine {
                     chest.storeItem(item);
                     view.displayMessage("cannot pick up, inventory is full. You must drop something first");
                 }
+                return;
             }
-            case "ATTACK" -> {
+
+            case "ATTACK": {
                 if (currentBattle == null || currentBattle.isOver()) {
                     view.displayMessage("There is no battle right now.");
                     return;
@@ -535,12 +572,24 @@ public class GameEngine {
                 }
 
                 int dealt = currentBattle.regularAttack(raw);
-                view.displayMessage(dealt + " damage was dealt to " + currentBattle.getEnemy().getName() + "!");
+                view.displayMessage(dealt + " damage was dealt to " +
+                        currentBattle.getEnemy().getName() + "!");
+                return;
             }
-            case "SAVE" -> saveGame(argument);
-            case "LOAD" -> loadGame();
-            default -> view.displayMessage("Invalid command. Type HELP to see available commands.");
+
+            case "SAVE":
+                saveGame(argument);
+                return;
+
+            case "LOAD":
+                loadGame();
+                return;
+
+            default:
+                view.displayMessage("Invalid command. Type HELP to see available commands.");
+                return;
         }
+
     }
 
 

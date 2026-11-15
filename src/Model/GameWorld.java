@@ -11,7 +11,7 @@ public class GameWorld {
     private List<Room> rooms;
     private List<Enemy> enemies;
     private List<Item> items;
-    private List<NPC> npcs;
+    //private List<NPC> npcs;
     private List<Puzzle> puzzles;
 
     private Random random;
@@ -20,7 +20,7 @@ public class GameWorld {
         rooms = new ArrayList<>();
         enemies = new ArrayList<>();
         items = new ArrayList<>();
-        npcs = new ArrayList<>();
+        //npcs = new ArrayList<>();
         puzzles = new ArrayList<>();
 
         random = new Random();
@@ -64,25 +64,30 @@ public class GameWorld {
         String nextRoomID = null;
 
         switch (direction.toUpperCase()) {
-            case "NORTH", "N":
+            case "NORTH":
+            case "N":
                 nextRoomID = currentRoom.getNorth();
                 break;
 
-            case "SOUTH", "S":
+            case "SOUTH":
+            case "S":
                 nextRoomID = currentRoom.getSouth();
                 break;
 
-            case "EAST", "E":
+            case "EAST":
+            case "E":
                 nextRoomID = currentRoom.getEast();
                 break;
 
-            case "WEST", "W":
+            case "WEST":
+            case "W":
                 nextRoomID = currentRoom.getWest();
                 break;
 
             default:
                 return null;
         }
+
         return getRoomByID(nextRoomID);
     }
 
@@ -168,7 +173,7 @@ public class GameWorld {
             return null;
         }
         for (Item item : items) {
-            if (item.getID().equals(itemID)) {
+            if (item.getId().equals(itemID)) {
                 return item;
             }
         }
@@ -198,6 +203,7 @@ public class GameWorld {
 
 
     // NPC METHODS
+    /*
     public NPC getNPCByID(String npcID) {
 
         if (npcID == null) {
@@ -222,7 +228,7 @@ public class GameWorld {
         }
         return room.getNPCs();
     }
-
+    */
 
 
     // PUZZLE METHODS
@@ -274,16 +280,18 @@ public class GameWorld {
     }
 
     public void addItem(Item item) {
-        if (item != null && item.getID() != null && getItemByID(item.getID()) == null) {
+        if (item != null && item.getId() != null && getItemByID(item.getId()) == null) {
             items.add(item);
         }
     }
 
+    /*
     public void addNPC(NPC npc) {
         if (npc != null && npc.getNPCID() != null && getNPCByID(npc.getNPCID()) == null) {
             npcs.add(npc);
         }
     }
+    */
 
     public void addPuzzle(Puzzle puzzle) {
         if (puzzle != null && puzzle.getPuzzleID() != null && getPuzzleByID(puzzle.getPuzzleID()) == null) {
