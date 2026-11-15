@@ -354,7 +354,7 @@ public class DataLoader {
     public List<Puzzle> loadPuzzles() {
         List<Puzzle> puzzles = new ArrayList<>();
 
-        File file = new File(dataDirectory, "puzzle.txt");
+        File file = new File(dataDirectory, "puzzles.txt");
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 
