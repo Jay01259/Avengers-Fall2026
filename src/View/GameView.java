@@ -11,7 +11,7 @@ public class GameView {
     }
 
     public void displayTitle() {
-        System.out.println("Welcome to The Stygian Trail!");
+        System.out.println("THE STYGIAN TRAIL");
         System.out.println("---------------------------------------------------");
     }
 
@@ -38,6 +38,7 @@ public class GameView {
         System.out.println("AVAILABLE COMMANDS");
         System.out.println("---------------------------------------------------");
 
+        System.out.println("HELP            - Display the list of available commands.");
         System.out.println("\nMOVEMENT / EXPLORATION");
         System.out.println("NORTH (N)       - Move north.");
         System.out.println("SOUTH (S)       - Move south.");
@@ -84,6 +85,7 @@ public class GameView {
         System.out.println("IGNORE          - Ignore a battle reward.");
 
         System.out.println("\nGAME");
+        System.out.println("START           - Start the game.");
         System.out.println("SAVE [NAME]     - Save your game.");
         System.out.println("LOAD [NAME]     - Load a saved game.");
         System.out.println("QUIT            - Exit the game.");
@@ -95,8 +97,9 @@ public class GameView {
 
     // Room methods
     public void displayRoom(Room room) {
-        System.out.println("Current room: " + room.getName());
-        System.out.println("Room description: " + room.getDescription());
+
+        System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXX");
+        System.out.println(room.getFullDescription());
     }
 
     public void displayExits(List<String> exits) {
@@ -115,7 +118,7 @@ public class GameView {
         System.out.println("Items in this room:");
 
         if (items == null || items.isEmpty()) {
-            System.out.println("There are no items in this room");
+            System.out.println("There are no items in this room.");
             return;
         }
 
@@ -131,25 +134,39 @@ public class GameView {
     // Displays Player and StorageChest inventory
     public void displayInventory(Inventory inventory, boolean isStorageChest) {
 
-        if (isStorageChest) {
-            System.out.println("Storage Chest:");
-        } else {
-            System.out.println("Inventory:");
-        }
-
         if (inventory == null || inventory.isEmpty()) {
-
             if (isStorageChest) {
-                System.out.println("This chest is empty");
+                System.out.println("The chest is empty.");
             } else {
                 System.out.println("You have no items in your inventory");
             }
             return;
         }
 
-        for (Item item : inventory) {
-            System.out.println("- " + item.getName());
+        if (isStorageChest) {
+            System.out.print("Storage Chest: ");
+        } else {
+            System.out.print("You currently have ");
         }
+
+        boolean firstItem = true;
+
+        for (Item item : inventory) {
+
+            if (!firstItem) {
+                System.out.print(", ");
+            }
+
+            System.out.print("'" + item.getName() + "'");
+
+            if (item.isStackable()) {
+                System.out.print(" x" + item.getQuantity());
+            }
+
+            firstItem = false;
+        }
+
+        System.out.println();
     }
 
     public void displayHealth(Player player) {
@@ -164,7 +181,6 @@ public class GameView {
 
         System.out.println("Item: " + item.getName());
         System.out.println("Description: " + item.getDescription());
-        System.out.println("Value: " + item.getValue() + " coins");
     }
 
 
@@ -202,14 +218,19 @@ public class GameView {
     public void displayAltSkillsMenu(String skill1Name, int skill1Cooldown, String skill2Name, int skill2Cooldown) {
 
         System.out.println();
-        System.out.println("Alt Skills Menu");
+        System.out.println("Entering Alternate Skills Menu");
         System.out.println("---------------------------------------------------");
 
-        if (skill1Name == null || skill2Name == null) {
-            System.out.println("No alternate skills available.");
-        } else {
+        if (skill1Name != null) {
             System.out.println("ALT 1 - " + skill1Name + " (Cooldown: " + skill1Cooldown + ")");
+        }
+
+        if (skill2Name != null) {
             System.out.println("ALT 2 - " + skill2Name + " (Cooldown: " + skill2Cooldown + ")");
+        }
+
+        if (skill1Name == null && skill2Name == null) {
+            System.out.println("No alternate skills available.");
         }
 
         System.out.println();
