@@ -39,6 +39,7 @@ public class GameWorld {
         }
         return null;
     }
+
     public Room getRoomByName(String roomName) {
         if (roomName == null) {
             return null;
@@ -167,7 +168,7 @@ public class GameWorld {
             return null;
         }
         for (Item item : items) {
-            if (item.getItemID().equals(itemID)) {
+            if (item.getID().equals(itemID)) {
                 return item;
             }
         }
@@ -273,7 +274,7 @@ public class GameWorld {
     }
 
     public void addItem(Item item) {
-        if (item != null && item.getItemID() != null && getItemByID(item.getItemID()) == null) {
+        if (item != null && item.getID() != null && getItemByID(item.getID()) == null) {
             items.add(item);
         }
     }
