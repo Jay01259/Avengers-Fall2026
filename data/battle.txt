@@ -1,0 +1,3 @@
+movesPerTurn=3
+baseFleeChance=0.50
+fleeIncrease=0.10

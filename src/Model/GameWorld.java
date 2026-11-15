@@ -86,16 +86,26 @@ public class GameWorld {
     }
 
     public Room getVisitRoom(Room currentRoom, String roomName) {
+        if (currentRoom == null || roomName == null) {
+            return null;
+        }
+
         Room target = getRoomByName(roomName);
+
         if (target == null || !currentRoom.canVisit(target.getRoomID())) {
             return null;
         }
+
         return target;
     }
+
     public Room getLeaveRoom(Room currentRoom) {
+        if (currentRoom == null || currentRoom.getLeaveTo() == null) {
+            return null;
+        }
+
         return getRoomByID(currentRoom.getLeaveTo());
     }
-
 
     public boolean isRoomUnlocked(Room room, Player player) {
 
@@ -143,6 +153,7 @@ public class GameWorld {
         if (possibleEnemies == null || possibleEnemies.isEmpty()) {
             return null;
         }
+
         int randomIndex = random.nextInt(possibleEnemies.size());
         return possibleEnemies.get(randomIndex);
     }
@@ -228,16 +239,16 @@ public class GameWorld {
     }
 
     public Puzzle getPuzzleInRoom(Room room) {
-
         if (room == null) {
             return null;
         }
-        for (Puzzle puzzle : puzzles) {
-            if (puzzle.getRoomID().equals(room.getRoomID()) && !puzzle.isCompleted()) {
 
+        for (Puzzle puzzle : room.getPuzzles()) {
+            if (!puzzle.isCompleted()) {
                 return puzzle;
             }
         }
+
         return null;
     }
 
@@ -284,5 +295,18 @@ public class GameWorld {
     // Random Methods
     public boolean shouldSpawn() {
         return random.nextBoolean();
+    }
+
+    // Might have to change after Fabian adjusts the random encounter system
+    public Enemy getRandomEncounter(Room room) {
+        if (room == null || !room.isRandomEnemyRoom()) {
+            return null;
+        }
+
+        if (!shouldSpawn()) {
+            return null;
+        }
+
+        return getRandomEnemy(room.getEnemies());
     }
 }

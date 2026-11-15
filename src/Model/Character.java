@@ -25,8 +25,6 @@ public abstract class Character {
     }
 
     public int heal(int amount){
-        // Returns the amount of HP restored, or 0 if no HP was restored
-        // In main game loop, use the return value to tell user how much HP was restored
         if (amount <= 0 || currentHP >= maxHP || !isAlive()){
             return 0;
         }
