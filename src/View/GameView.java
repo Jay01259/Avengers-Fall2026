@@ -31,6 +31,7 @@ public class GameView {
     }
 
 
+
     // Commands
     public void displayHelp() {
 
@@ -251,15 +252,25 @@ public class GameView {
     // Puzzles
     public void displayPuzzle(Puzzle puzzle, boolean hasRequiredItem) {
 
-        System.out.println();
-        System.out.println("Puzzle: " + puzzle.getName());
-        System.out.println("---------------------------------------------------");
-        System.out.println(puzzle.display(hasRequiredItem));
+        if (puzzle == null) {
+            System.out.println("There is not a puzzle in this room.");
+            return;
+        }
+
+        if (!hasRequiredItem && puzzle.getLockedDescription() != null) {
+            System.out.println(puzzle.getLockedDescription());
+            return;
+        }
+
+        System.out.println(puzzle.getDescription());
 
         System.out.println();
-        System.out.println("Puzzle Commands:");
-        System.out.println("PULL [LEVER NAME] - Pull a specific lever.");
-        System.out.println("SOLVE             - Check your puzzle solution.");
-        System.out.println("RESET             - Reset the puzzle.");
+
+        for (Lever lever : puzzle.getLevers()) {
+
+            String state = lever.isOn() ? "On" : "Off";
+
+            System.out.println(lever.getDisplayName() + " is in the " + state + " state.");
+        }
     }
 }

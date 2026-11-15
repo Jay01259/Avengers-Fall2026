@@ -1,6 +1,5 @@
 package Model;
 
-
 public class KeyItem extends Item {
     private String roomId;
     private String doorId;

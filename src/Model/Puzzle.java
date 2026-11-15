@@ -26,7 +26,7 @@ public class Puzzle {
         this.solveText = solveText;
         this.levers = new ArrayList<>();
         for (String id : leverIDs) {
-            levers.add(new Lever(id));
+            levers.add(new Lever(id, id.replace("Lever", " Lever")));
         }
         this.solution = new LinkedHashSet<>(solution);
         this.requiredItemID = requiredItemID;

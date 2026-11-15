@@ -1,6 +1,5 @@
 package Model;
 
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -80,14 +79,16 @@ public class Inventory implements Iterable<Item> {
         return items.isEmpty();
     }
 
+
     public boolean hasLeatherSatchel() {
         for (Item item : items) {
-            if (item != null && Item.LEATHER_SATCHEL.equalsIgnoreCase(item.getId())) {
+            if (item != null && "LEATHER_SATCHEL".equalsIgnoreCase(item.getId())) {
                 return true;
             }
         }
         return false;
     }
+
 
     public boolean addItem(Item item) {
         if (item == null) {
@@ -241,3 +242,4 @@ public class Inventory implements Iterable<Item> {
         return items.iterator();
     }
 }
+
