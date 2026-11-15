@@ -1,4 +1,4 @@
-package Kelvin;
+package Model;
 
 public class Armor extends Item {
     private int defenseBonus;

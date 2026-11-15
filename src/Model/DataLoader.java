@@ -21,8 +21,111 @@ public class DataLoader {
         this.saveDirectory = saveDirectory;
     }
 
-    public List<Room> loadRooms(){
+    public List<Room> loadRooms() {
 
+        List<Room> rooms = new ArrayList<>();
+
+        File file = new File(dataDirectory, "rooms.txt");
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+
+                // ID | Name | Description | Exits | Chest | Unlocked by | Random enemy room
+                String[] data = line.split("\\|", -1);
+
+                if (data.length != 7) {
+                    System.out.println("Invalid room data: " + line);
+                    continue;
+                }
+
+                String roomID = data[0].trim();
+                String name = data[1].trim();
+                String description = data[2].replace("\\n", "\n");
+
+                // Exits, e.g. NORTH:R02,SOUTH:R04,EAST:R07 or VISIT:R08,VISIT:R09 or LEAVE:R23
+                String north = null;
+                String east = null;
+                String south = null;
+                String west = null;
+                List<String> visitRooms = new ArrayList<>();
+                String leaveTo = null;
+
+                for (String exit : data[3].split(",")) {
+
+                    String[] exitData = exit.split(":");
+
+                    if (exitData.length != 2) {
+                        continue;
+                    }
+
+                    String direction = exitData[0].trim().toUpperCase();
+                    String targetRoomID = exitData[1].trim();
+
+                    switch (direction) {
+                        case "NORTH":
+                            north = targetRoomID;
+                            break;
+                        case "EAST":
+                            east = targetRoomID;
+                            break;
+                        case "SOUTH":
+                            south = targetRoomID;
+                            break;
+                        case "WEST":
+                            west = targetRoomID;
+                            break;
+                        case "VISIT":
+                            visitRooms.add(targetRoomID);
+                            break;
+                        case "LEAVE":
+                            leaveTo = targetRoomID;
+                            break;
+                    }
+                }
+
+                // Items, puzzles, NPCs and enemies are added to the room by their own loaders
+                Room room = new Room(roomID, name, description, null, null, null, null,
+                        north, east, south, west);
+
+                for (String visitID : visitRooms) {
+                    room.addVisitRoom(visitID);
+                }
+
+                if (leaveTo != null) {
+                    room.setLeaveTo(leaveTo);
+                }
+
+                // Storage chest (only the Player's Room)
+                if (data[4].trim().equalsIgnoreCase("true")) {
+                    room.setChest(new StorageChest());
+                }
+
+                // What unlocks the room: a key (W07, W08) or a puzzle (P5, P8). "-" means not locked.
+                String unlockedBy = data[5].trim();
+
+                if (unlockedBy.startsWith("W")) {
+                    room.lockWithKey(unlockedBy);
+                }
+                else if (unlockedBy.startsWith("P")) {
+                    room.lockWithPuzzle(unlockedBy);
+                }
+
+                // Random enemy room (Storage Room #2, The Hollows, Crucible Bounty)
+                room.setRandomEnemyRoom(data[6].trim().equalsIgnoreCase("true"));
+
+                rooms.add(room);
+            }
+        } catch (IOException e) {
+            System.out.println("Error loading rooms: " + e.getMessage());
+        }
+        return rooms;
     }
 
     public List<Item> loadItems(){

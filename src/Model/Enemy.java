@@ -1,6 +1,6 @@
 package Model;
 
-public class Enemy extends Character {
-    private
+public class Enemy {
+
 
 }

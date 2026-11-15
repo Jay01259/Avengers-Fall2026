@@ -274,8 +274,80 @@ public class GameEngine {
     }
 
     public void puzzleLoop(Puzzle puzzle) {
-        // Start the puzzle loop
+        Room room = player.getCurrentRoom();
 
+        // P8 needs the Beast Medallion before its levers can be pulled
+        boolean hasRequiredItem = puzzle.getRequiredItemID() == null
+                || player.getInventory().hasItem(puzzle.getRequiredItemID());
+
+        // Show the puzzle, its levers, and the puzzle commands
+        view.displayPuzzle(puzzle, hasRequiredItem);
+
+        // Without the required item the player can only look at it
+        if (!hasRequiredItem) {
+            return;
+        }
+
+        view.displayMessage("BACK- Step away from the puzzle.");
+
+        // Keep going until the puzzle is solved or the player types BACK
+        while (!puzzle.isCompleted()) {
+
+            view.displayMessage("What would you like to do with the puzzle?");
+            String input = scanner.nextLine().trim();
+            String upperInput = input.toUpperCase();
+
+            if (upperInput.equals("BACK")) {
+                view.displayMessage("You step away from the puzzle.");
+                return;
+            }
+            else if (upperInput.equals("DISPLAY")) {
+                if (puzzle == null) {
+                    view.displayMessage("No Puzzle available.");
+                } else {
+                    puzzleLoop(puzzle);
+                }
+                return;
+            }
+            else if (upperInput.startsWith("PULL ")) {
+                String leverName = input.substring(5).trim();
+                view.displayMessage(puzzle.pullLever(leverName, hasRequiredItem));
+            }
+            else if (upperInput.equals("RESET")) {
+                view.displayMessage(puzzle.reset(room.getName()));
+            }
+            else if (upperInput.equals("SOLVE")) {
+
+                if (puzzle.checkSolution(hasRequiredItem)) {
+                    view.displayMessage("Your solution is correct.");
+                    view.displayMessage(puzzle.getSolveText());
+
+                    // Put the reward items in the room so the player can PICKUP them
+                    for (String itemID : puzzle.getRewardItems().keySet()) {
+                        int quantity = puzzle.getRewardItems().get(itemID);
+                        Item item = gameWorld.getItemByID(itemID);
+                        for (int i = 0; i < quantity; i++) {
+                            if (item != null) {
+                                room.addItem(item);
+                            }
+                        }
+                    }
+
+                    // Unlock rooms waiting on this puzzle (P5 -> Hollows and Dead Woods, P8 -> Cave)
+                    for (Room r : gameWorld.getRooms()) {
+                        if (puzzle.getPuzzleID().equals(r.getRequiredPuzzleID())) {
+                            r.unlock();
+                        }
+                    }
+                }
+                else {
+                    view.displayMessage("Your solution is incorrect. Try again!");
+                }
+            }
+            else {
+                view.displayMessage("Puzzle commands: PULL [LEVER NAME], SOLVE, RESET, DISPLAY, BACK");
+            }
+        }
     }
 
 
