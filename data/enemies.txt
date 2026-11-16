@@ -1,21 +1,42 @@
+
+# THE STYGIAN TRAIL - ENEMY DATA
+# Combat & Enemies - Fabian Vindas
+#
 # One enemy per line, using these 10 fields:
 # enemyID|name|description|maxHP|attack|defense|boss|silverDrop|goldDrop|itemDrops
 #
 # boss is true or false.
 # itemDrops is - for none, or itemID:quantity,itemID:quantity.
 #
-# Replace every placeholder with the team's actual values,
-# then remove the leading # from that record:
+# IMPORTANT:
+# Enemy stats match the provided requirements.
+# Descriptions and rewards are temporary placeholders.
+# Update them when the team's official values are confirmed.
 #
-# <enemyID>|<name>|<description>|<maxHP>|<attack>|<defense>|<boss>|<silverDrop>|<goldDrop>|<itemDrops>
-#
-# Enemy names stated in your design:
-# Mutated Falcon
-# Thief
-# CDU Guard
-# Snapping Tortoise
-# Mutated Black Widow
-# Phantom Walker
-# Father of Beasts
-#
-# The design mentions eight enemies but does not name the eighth.
+# ==================================================
+# REGULAR ENEMIES
+# ==================================================
+
+M01|Mutated Falcon|Description pending|50|12|1|false|0|0|-
+M02|Mutated Snapping Tortoise|Description pending|40|8|5|false|0|0|-
+M03|Mutated Wolf|Description pending|75|15|0|false|0|0|-
+
+# ==================================================
+# MINI-BOSSES
+# ==================================================
+
+M04|Mutated Black Widow|Description pending|350|20|8|true|0|0|-
+M05|Phantom Walker|Description pending|300|30|4|true|0|0|-
+
+# ==================================================
+# ADDITIONAL ENEMIES
+# ==================================================
+
+M06|CDU Guard|Description pending|150|20|5|false|0|0|-
+M07|Thief|Description pending|150|20|10|false|0|0|-
+
+# ==================================================
+# FINAL BOSS
+# ==================================================
+
+M08|Father of Beasts|Description pending|1000|30|10|true|0|0|-
