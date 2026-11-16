@@ -64,12 +64,7 @@ public class GameEngine {
         } catch (UnsupportedOperationException ignored) {
         }
 
-        try {
-            for (Item item : dataLoader.loadItems()) {
-                gameWorld.addItem(item);
-            }
-        } catch (UnsupportedOperationException ignored) {
-        }
+        dataLoader.loadItems(gameWorld);
 
         try {
             for (Enemy enemy : dataLoader.loadEnemies()) {

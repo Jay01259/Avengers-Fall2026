@@ -135,9 +135,146 @@ public class DataLoader {
         return rooms;
     }
 
-    public List<Item> loadItems() {
-        throw new UnsupportedOperationException("Item loading has not been implemented yet.");
+
+    public void loadItems(GameWorld gameWorld) {
+        File file = new File(dataDirectory, "Items.txt");
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+
+                line = line.trim();
+
+                if (line.isEmpty() || line.startsWith("#")) {
+                    continue;
+                }
+
+                String[] data = line.split("\\|", -1);
+
+                if (data.length != 10) {
+                    throw new IOException("Invalid item data: " + line);
+                }
+
+                String id = data[0].trim();
+                String name = data[1].trim();
+                String type = data[2].trim().toUpperCase();
+                String description = data[3].trim();
+
+                int value = Integer.parseInt(data[4].trim());
+
+                int attackBonus = data[5].equals("-") ? 0 : Integer.parseInt(data[5].trim());
+                int durability = data[6].equals("-") ? 0 : Integer.parseInt(data[6].trim());
+                int defenseBonus = data[7].equals("-") ? 0 : Integer.parseInt(data[7].trim());
+                int healAmount = data[8].equals("-") ? 0 : Integer.parseInt(data[8].trim());
+
+                String[] roomIDs = data[9].split(",");
+
+                Item item;
+
+                // Create the appropriate item object.
+                switch (type) {
+
+                    case "WEAPON":
+                        item = new Weapon(id, name, description, value,
+                                attackBonus, durability);
+                        break;
+
+                    case "ARMOR":
+                        item = new Armor(id, name, description, value,
+                                defenseBonus, durability);
+                        break;
+
+                    case "CONSUMABLE":
+                        item = new Consumable(id, name, description, value,
+                                healAmount, 1);
+                        break;
+
+                    case "KEY":
+                        String targetRoom = id.equals("W07") ? "R15" : "R11";
+                        String doorDirection = id.equals("W07") ? "EAST" : "NORTH";
+
+                        item = new KeyItem(id, name, description, value,
+                                targetRoom, doorDirection);
+                        break;
+
+                    default:
+                        item = new Item(id, name, description, value);
+                        break;
+                }
+
+                // Mark quest-related items.
+                if (id.equals("W09") || id.equals("W16") || id.equals("FP01")) {
+                    item.setQuestItem(true);
+                }
+
+                // Add the item definition to the game world.
+                gameWorld.addItem(item);
+
+                // Add a separate copy to each designated room.
+                for (String roomID : roomIDs) {
+
+                    Room room = gameWorld.getRoomByID(roomID.trim());
+
+                    // FP01 is added after the final boss is defeated.
+                    if (room != null && !id.equals("FP01")) {
+
+                        Item roomItem = createItemCopy(item);
+
+                        room.addItem(roomItem);
+                    }
+                }
+            }
+
+        } catch (IOException | NumberFormatException e) {
+            throw new RuntimeException("Error loading items: " + e.getMessage(), e);
+        }
     }
+
+
+    private Item createItemCopy(Item item) {
+
+        if (item instanceof Weapon) {
+            Weapon weapon = (Weapon) item;
+
+            return new Weapon(item.getId(), item.getName(), item.getDescription(),
+                    item.getValueSilver(), weapon.getAttackBonus(),
+                    weapon.getDurabilityLimit());
+        }
+
+        if (item instanceof Armor) {
+            Armor armor = (Armor) item;
+
+            return new Armor(item.getId(), item.getName(), item.getDescription(),
+                    item.getValueSilver(), armor.getDefenseBonus(),
+                    armor.getDurabilityLimit());
+        }
+
+        if (item instanceof Consumable) {
+            Consumable consumable = (Consumable) item;
+
+            return new Consumable(item.getId(), item.getName(), item.getDescription(),
+                    item.getValueSilver(), consumable.getHealAmount(), 1);
+        }
+
+        if (item instanceof KeyItem) {
+            KeyItem key = (KeyItem) item;
+
+            return new KeyItem(item.getId(), item.getName(), item.getDescription(),
+                    item.getValueSilver(), key.getRoomId(), key.getDoorId());
+        }
+
+        Item copy = new Item(item.getId(), item.getName(), item.getDescription(),
+                item.getValueSilver());
+
+        copy.setQuestItem(item.isQuestItem());
+        copy.setDroppable(item.isDroppable());
+
+        return copy;
+    }
+
+
 
     public List<Enemy> loadEnemies() {
         try {
@@ -575,6 +712,8 @@ public class DataLoader {
             for (Room room : loadRooms()) {
                 restoredWorld.addRoom(room);
             }
+
+            loadItems(restoredWorld);
 
             // Restore puzzles if their data is available.
             try {
