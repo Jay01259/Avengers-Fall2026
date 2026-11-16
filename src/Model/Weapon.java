@@ -1,4 +1,4 @@
-﻿package Model;
+package Model;
 
 public class Weapon extends Item {
     private int attackBonus;

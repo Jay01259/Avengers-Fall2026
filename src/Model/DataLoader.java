@@ -1,4 +1,4 @@
-﻿package Model;
+package Model;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -239,6 +239,14 @@ public class DataLoader {
                 }
             }
         }
+    }
+
+    public List<NPC> loadNPCs() {
+        List<NPC> npcs = new ArrayList<>();
+        npcs.add(NPC.createLombart());
+        npcs.add(NPC.createUndertaker());
+        npcs.add(NPC.createBarkeep());
+        return npcs;
     }
 
     private File resolveItemFile() {

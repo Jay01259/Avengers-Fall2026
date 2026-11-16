@@ -1,4 +1,4 @@
-﻿package Model;
+package Model;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

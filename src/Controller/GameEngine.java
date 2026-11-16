@@ -1,4 +1,4 @@
-﻿package Controller;
+package Controller;
 
 import java.util.Scanner;
 import View.GameView;
@@ -68,6 +68,7 @@ public class GameEngine {
         }
 
         dataLoader.loadItems(gameWorld);
+        loadNPCsIntoWorld();
 
         try {
             for (Enemy enemy : dataLoader.loadEnemies()) {
@@ -117,6 +118,48 @@ public class GameEngine {
         view.displayRoom(startingRoom);
 
         gameLoop();
+    }
+
+    private void loadNPCsIntoWorld() {
+        if (gameWorld == null) {
+            return;
+        }
+
+        NPC[] defaultNPCs = new NPC[]{NPC.createLombart(), NPC.createUndertaker(), NPC.createBarkeep()};
+        for (NPC npc : defaultNPCs) {
+            gameWorld.addNPC(npc);
+            Room room = gameWorld.getRoomByID(npc.getRoomID());
+            if (room != null) {
+                room.addNPC(npc);
+            }
+        }
+    }
+
+    private NPC resolveNPC(String identifier, Room room) {
+        if (room == null) {
+            return null;
+        }
+
+        if (identifier == null || identifier.trim().isEmpty()) {
+            return null;
+        }
+
+        String trimmed = identifier.trim();
+        for (NPC npc : room.getNPCs()) {
+            if (npc.getName().equalsIgnoreCase(trimmed)
+                    || npc.getNPCID().equalsIgnoreCase(trimmed)
+                    || (npc.getName() + " " + npc.getNPCID()).equalsIgnoreCase(trimmed)) {
+                return npc;
+            }
+        }
+        return null;
+    }
+
+    private NPC resolveNPCFromRoom(Room room) {
+        if (room == null || room.getNPCs().isEmpty()) {
+            return null;
+        }
+        return room.getNPCs().get(0);
     }
 
     // Purpose: Runs the main game loop until the player quits, dies, or finishes the game.
@@ -495,17 +538,153 @@ public class GameEngine {
                 return;
             }
 
-            case "TALK":
-                view.displayMessage("Talk command is not available yet.");
-                return;
+            case "TALK": {
+                if (argument.isEmpty()) {
+                    StringBuilder names = new StringBuilder();
+                    for (NPC npc : currentRoom.getNPCs()) {
+                        if (names.length() > 0) names.append(", ");
+                        names.append(npc.getName());
+                    }
+                    if (names.length() == 0) {
+                        view.displayMessage("There are no NPCs in this room.");
+                    } else {
+                        view.displayMessage("NPCs here: " + names);
+                    }
+                    return;
+                }
 
-            case "BUY":
-                view.displayMessage("Buy command is not available yet.");
-                return;
+                NPC npc = resolveNPC(argument, currentRoom);
+                if (npc == null) {
+                    view.displayMessage("There is no such NPC in this room.");
+                    return;
+                }
 
-            case "SELL":
-                view.displayMessage("Sell command is not available yet.");
+                String text = npc.getDialogue("TALK").replace("[NAME]", player.getName());
+                view.displayMessage(text);
                 return;
+            }
+
+            case "BUY": {
+                if (argument.isEmpty()) {
+                    view.displayMessage("Buy what?");
+                    return;
+                }
+
+                NPC merchant = resolveNPCFromRoom(currentRoom);
+                if (merchant == null) {
+                    view.displayMessage("There is no merchant here to buy from.");
+                    return;
+                }
+
+                Item item = gameWorld.getItemByID(argument);
+                if (item == null) {
+                    item = player.getInventory().getItem(argument);
+                }
+                if (item == null) {
+                    item = currentRoom.findItem(argument);
+                }
+                if (item == null) {
+                    view.displayMessage("That item is not available to buy.");
+                    return;
+                }
+
+                int price = merchant.getBuyPrice(item.getId());
+                if (price <= 0) {
+                    price = item.getValueSilver();
+                }
+                if (price <= 0) {
+                    view.displayMessage("That item cannot be purchased here.");
+                    return;
+                }
+
+                int totalSilver = player.getSilverCoins() + (player.getGoldCoins() * 100);
+                if (totalSilver < price) {
+                    view.displayMessage("You do not have enough currency to buy that item.");
+                    return;
+                }
+
+                if (!player.getInventory().addItem(item)) {
+                    view.displayMessage("Your inventory is full. You need to make space first.");
+                    return;
+                }
+
+                player.spendCoins(price);
+                view.displayMessage("You bought " + item.getName() + " for " + price + " silver.");
+                return;
+            }
+
+            case "SELL": {
+                if (argument.isEmpty()) {
+                    view.displayMessage("Sell what?");
+                    return;
+                }
+
+                NPC buyer = resolveNPCFromRoom(currentRoom);
+                if (buyer == null) {
+                    view.displayMessage("There is no buyer here.");
+                    return;
+                }
+
+                Item item = player.getInventory().getItem(argument);
+                if (item == null) {
+                    view.displayMessage("You do not have that item.");
+                    return;
+                }
+
+                int price = buyer.getSellPrice(item.getId());
+                if (price <= 0) {
+                    price = item.getValueSilver();
+                }
+                if (price <= 0) {
+                    view.displayMessage("That item cannot be sold here.");
+                    return;
+                }
+
+                player.getInventory().removeItem(item);
+                int gold = price / 100;
+                int silver = price % 100;
+                player.setGoldCoins(player.getGoldCoins() + gold);
+                player.setSilverCoins(player.getSilverCoins() + silver);
+                view.displayMessage("You sold " + item.getName() + " for " + price + " silver.");
+                return;
+            }
+
+            case "GIVE": {
+                if (argument.isEmpty()) {
+                    view.displayMessage("Give what?");
+                    return;
+                }
+
+                String targetName = null;
+                String itemText = argument;
+                if (argument.toUpperCase().contains(" TO ")) {
+                    String[] parts2 = argument.split("(?i)\\s+TO\\s+", 2);
+                    itemText = parts2[0].trim();
+                    targetName = parts2[1].trim();
+                }
+
+                NPC target = resolveNPC(targetName == null ? "" : targetName, currentRoom);
+                if (target == null) {
+                    target = resolveNPCFromRoom(currentRoom);
+                }
+                if (target == null) {
+                    view.displayMessage("There is no NPC here to give an item to.");
+                    return;
+                }
+
+                Item invItem = player.getInventory().getItem(itemText);
+                if (invItem == null) {
+                    view.displayMessage("You do not have that item.");
+                    return;
+                }
+
+                if (player.giveItem(invItem.getId(), target)) {
+                    view.displayMessage("You gave " + invItem.getName() + " to " + target.getName() + ".");
+                } else {
+                    view.displayMessage("You cannot give that item to this NPC.");
+                }
+                return;
+            }
 
             case "STORE": {
                 StorageChest chest = currentRoom.getChest();

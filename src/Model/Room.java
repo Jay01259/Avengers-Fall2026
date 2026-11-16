@@ -1,4 +1,4 @@
-﻿package Model;
+package Model;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ public class Room {
     private String description;
     private List<Item> items;
     private List<Puzzle> puzzles;
-    //private List<NPC> npcs;
+    private List<NPC> npcs;
     private List<Enemy> enemies;
 
     private String north;
@@ -28,16 +28,20 @@ public class Room {
     private boolean randomEnemyRoom;
     private StorageChest chest;
 
-    // add NPC back in when implemented
     // Purpose: Creates a room with its world location, exits, contents, and puzzle metadata.
     public Room(String roomID, String name, String description, List<Item> items, List<Puzzle> puzzles,
-                /*List<NPC> npcs,*/ List<Enemy> enemies, String north, String east, String south, String west) {
+                List<Enemy> enemies, String north, String east, String south, String west) {
+        this(roomID, name, description, items, puzzles, null, enemies, north, east, south, west);
+    }
+
+    public Room(String roomID, String name, String description, List<Item> items, List<Puzzle> puzzles,
+                List<NPC> npcs, List<Enemy> enemies, String north, String east, String south, String west) {
         this.roomID = roomID;
         this.name = name;
         this.description = description;
         this.items = items == null ? new ArrayList<>() : new ArrayList<>(items);
         this.puzzles = puzzles == null ? new ArrayList<>() : new ArrayList<>(puzzles);
-        //this.npcs = npcs == null ? new ArrayList<>() : new ArrayList<>(npcs);
+        this.npcs = npcs == null ? new ArrayList<>() : new ArrayList<>(npcs);
         this.enemies = enemies == null ? new ArrayList<>() : new ArrayList<>(enemies);
         this.north = north;
         this.east = east;
@@ -65,11 +69,39 @@ public class Room {
         return puzzles;
     }
 
-    /*
     public List<NPC> getNPCs() {
         return npcs;
     }
-     */
+
+    public void addNPC(NPC npc) {
+        if (npc != null && !npcs.contains(npc)) {
+            npcs.add(npc);
+        }
+    }
+
+    public NPC getNPCByID(String npcID) {
+        if (npcID == null) {
+            return null;
+        }
+        for (NPC npc : npcs) {
+            if (npc.getNPCID().equalsIgnoreCase(npcID)) {
+                return npc;
+            }
+        }
+        return null;
+    }
+
+    public NPC getNPCByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        for (NPC npc : npcs) {
+            if (npc.getName().equalsIgnoreCase(name.trim())) {
+                return npc;
+            }
+        }
+        return null;
+    }
 
     // Purpose: Returns enemies that are currently present in this room.
     public List<Enemy> getEnemies() {
@@ -147,6 +179,16 @@ public class Room {
     // Purpose: Builds a detailed room description that includes any active puzzle information.
     public String getFullDescription() {
         String text = name + "\n" + description;
+        if (!npcs.isEmpty()) {
+            StringBuilder npcList = new StringBuilder();
+            for (NPC npc : npcs) {
+                if (npcList.length() > 0) {
+                    npcList.append(", ");
+                }
+                npcList.append(npc.getName());
+            }
+            text += "\nNPCs here: " + npcList;
+        }
         if (hasUnsolvedPuzzle()) {
             text += "\nThere is a puzzle in this room.";
         }

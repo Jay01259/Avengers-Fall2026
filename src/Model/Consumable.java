@@ -1,4 +1,4 @@
-﻿package Model;
+package Model;
 
 public class Consumable extends Model.Item {
     private int healAmount;

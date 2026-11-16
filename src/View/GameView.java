@@ -1,4 +1,4 @@
-﻿package View;
+package View;
 
 import Model.*;
 import java.util.List;
@@ -107,6 +107,12 @@ public class GameView {
 
         System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXX");
         System.out.println(room.getFullDescription());
+        if (room.getNPCs() != null && !room.getNPCs().isEmpty()) {
+            System.out.println("NPCs in this room: " + room.getNPCs().stream()
+                    .map(npc -> npc.getName())
+                    .reduce((a, b) -> a + ", " + b)
+                    .orElse(""));
+        }
     }
 
     // Purpose: Lists all available exits so the player knows where they can travel next.

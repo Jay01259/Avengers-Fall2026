@@ -1,4 +1,4 @@
-﻿package Model;
+package Model;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ public class GameWorld {
     private List<Room> rooms;
     private List<Enemy> enemies;
     private List<Item> items;
-    //private List<NPC> npcs;
+    private List<NPC> npcs;
     private List<Puzzle> puzzles;
 
     private Random random;
@@ -21,7 +21,7 @@ public class GameWorld {
         rooms = new ArrayList<>();
         enemies = new ArrayList<>();
         items = new ArrayList<>();
-        //npcs = new ArrayList<>();
+        npcs = new ArrayList<>();
         puzzles = new ArrayList<>();
 
         random = new Random();
@@ -211,14 +211,13 @@ public class GameWorld {
 
 
     // NPC METHODS
-    /*
     public NPC getNPCByID(String npcID) {
 
         if (npcID == null) {
             return null;
         }
         for (NPC npc : npcs) {
-            if (npc.getNPCID().equals(npcID)) {
+            if (npc.getNPCID().equalsIgnoreCase(npcID)) {
                 return npc;
             }
         }
@@ -236,7 +235,6 @@ public class GameWorld {
         }
         return room.getNPCs();
     }
-    */
 
 
     // PUZZLE METHODS
@@ -295,13 +293,11 @@ public class GameWorld {
         }
     }
 
-    /*
     public void addNPC(NPC npc) {
         if (npc != null && npc.getNPCID() != null && getNPCByID(npc.getNPCID()) == null) {
             npcs.add(npc);
         }
     }
-    */
 
     public void addPuzzle(Puzzle puzzle) {
         if (puzzle != null && puzzle.getPuzzleID() != null && getPuzzleByID(puzzle.getPuzzleID()) == null) {

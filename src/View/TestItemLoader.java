@@ -1,4 +1,4 @@
-﻿import Model.DataLoader;
+import Model.DataLoader;
 import Model.Item;
 
 public class TestItemLoader {

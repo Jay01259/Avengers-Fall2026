@@ -1,4 +1,4 @@
-﻿package Model;
+package Model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -213,19 +213,99 @@ public class Player extends Character {
 
 
     // NPC Interaction Methods
-    /*
     public boolean buyItem(String itemID, NPC npc) {
-        // Implement
+        if (itemID == null || npc == null || inventory == null) {
+            return false;
+        }
+
+        Item item = inventory.getItem(itemID);
+        if (item == null) {
+            item = new Item(itemID, itemID, "", 0);
+        }
+
+        int price = npc.getBuyPrice(itemID);
+        if (price <= 0) {
+            price = item.getValueSilver();
+        }
+        if (!npc.sellsItem(itemID) && price <= 0) {
+            return false;
+        }
+
+        int totalSilver = silverCoins + (goldCoins * 100);
+        if (totalSilver < price) {
+            return false;
+        }
+
+        if (!inventory.addItem(item)) {
+            return false;
+        }
+        spendCoins(price);
+        return true;
     }
 
     public boolean sellItem(String itemID, NPC npc) {
-        // Implement
+        if (itemID == null || npc == null || inventory == null) {
+            return false;
+        }
+
+        Item item = inventory.getItem(itemID);
+        if (item == null) {
+            return false;
+        }
+
+        int payout = npc.getSellPrice(itemID);
+        if (payout <= 0) {
+            payout = item.getValueSilver();
+        }
+        if (!npc.buysItem(itemID) && payout <= 0) {
+            return false;
+        }
+
+        inventory.removeItem(item);
+        int newSilver = silverCoins + payout;
+        if (newSilver >= 100) {
+            goldCoins += newSilver / 100;
+            silverCoins = newSilver % 100;
+        } else {
+            silverCoins = newSilver;
+        }
+        return true;
     }
 
     public boolean giveItem(String itemID, NPC npc) {
-        // Implement
+        if (itemID == null || npc == null || inventory == null) {
+            return false;
+        }
+
+        Item item = inventory.getItem(itemID);
+        if (item == null) {
+            return false;
+        }
+
+        if (npc.getNPCID().equals("NPC03") && "W12".equalsIgnoreCase(item.getId())) {
+            int armorCount = 0;
+            for (Item invItem : inventory) {
+                if (invItem != null && "W12".equalsIgnoreCase(invItem.getId())) {
+                    armorCount++;
+                }
+            }
+            if (armorCount >= 3) {
+                Item reward = new Item("W11", "Silver pin", "A beautiful silver pin adorned with gemstones.", 400);
+                inventory.removeItem(item);
+                inventory.addItem(reward);
+                npc.setQuestComplete(true);
+                return true;
+            }
+        }
+
+        if (npc.getNPCID().equals("NPC03") && item.getId() != null && item.getId().equalsIgnoreCase("W12")) {
+            inventory.removeItem(item);
+            return true;
+        }
+
+        inventory.removeItem(item);
+        return true;
     }
-     */
 
 
     // Room Methods
