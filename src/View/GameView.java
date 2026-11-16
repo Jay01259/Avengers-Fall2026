@@ -59,6 +59,7 @@ public class GameView {
         System.out.println("DROP [ITEM]     - Drop an item.");
         System.out.println("USE [ITEM]      - Use an item.");
         System.out.println("EQUIP [ITEM]    - Equip a weapon or armor.");
+        System.out.println("UNEQUIP [ITEM]  - Unequip your weapon or armor.");
 
         System.out.println("\nPUZZLES");
         System.out.println("PULL [LEVER]    - Pull a lever.");

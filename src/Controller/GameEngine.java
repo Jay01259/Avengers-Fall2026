@@ -469,6 +469,35 @@ public class GameEngine {
                 return;
             }
 
+            case "UNEQUIP": {
+                if (argument.isEmpty()) {
+                    view.displayMessage("Unequip what? Enter WEAPON or ARMOR.");
+                    return;
+                }
+
+                Item equippedItem = null;
+
+                if (argument.equalsIgnoreCase("WEAPON")) {
+                    equippedItem = player.getEquippedWeapon();
+                } else if (argument.equalsIgnoreCase("ARMOR")) {
+                    equippedItem = player.getEquippedArmor();
+                } else {
+                    equippedItem = player.getInventory().getItem(argument);
+                }
+
+                if (equippedItem == null) {
+                    view.displayMessage("That item is not currently equipped.");
+                    return;
+                }
+
+                if (player.unequipItem(equippedItem)) {
+                    view.displayMessage(equippedItem.getName() + " unequipped.");
+                } else {
+                    view.displayMessage("That item is not currently equipped.");
+                }
+                return;
+            }
+
             case "PULL": {
                 if (argument.isEmpty()) {
                     view.displayMessage("Pull which lever?");
