@@ -14,7 +14,6 @@ public class GameEngine {
     GameView view = new GameView();
     Battle currentBattle;
     DataLoader dataLoader = new DataLoader("data", "saves");
-
     public static void main(String[] args) {
         GameEngine gameEngine = new GameEngine();
         gameEngine.startGame();
@@ -82,12 +81,19 @@ public class GameEngine {
         try {
             for (Puzzle puzzle : dataLoader.loadPuzzles()) {
                 gameWorld.addPuzzle(puzzle);
+
                 Room room = gameWorld.getRoomByID(puzzle.getRoomID());
+
                 if (room != null && !room.getPuzzles().contains(puzzle)) {
                     room.getPuzzles().add(puzzle);
+                } else if (room == null) {
+                    view.displayMessage("Puzzle " + puzzle.getPuzzleID() + " references missing room: " + puzzle.getRoomID());
                 }
             }
-        } catch (RuntimeException ignored) {
+
+        } catch (RuntimeException e) {
+            view.displayMessage("Error loading puzzles:");
+            e.printStackTrace();
         }
 
         Room startingRoom = gameWorld.getRoomByID("R01");
@@ -693,7 +699,8 @@ public class GameEngine {
 
         // P8 needs the Beast Medallion before its levers can be pulled
         boolean hasRequiredItem = puzzle.getRequiredItemID() == null
-                || player.getInventory().hasItem(puzzle.getRequiredItemID());
+                || puzzle.getRequiredItemID().isBlank()
+                || player.getInventory().getItem(puzzle.getRequiredItemID()) != null;
 
         // Show the puzzle, its levers, and the puzzle commands
         view.displayPuzzle(puzzle, hasRequiredItem);

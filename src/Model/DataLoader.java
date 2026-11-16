@@ -419,7 +419,8 @@ public class DataLoader {
             }
 
         } catch (IOException e) {
-            System.err.println("Error loading puzzles: " + e.getMessage());
+            System.err.println("Error loading puzzles:");
+            e.printStackTrace();
         }
 
         return puzzles;
@@ -468,6 +469,7 @@ public class DataLoader {
         }
     }
 
+    // Waiting on Battle and Items to get finished so the game can restore everything
     // Restores a saved game from a text file
     public GameMemory restoreGame(String saveName) {
 
@@ -477,12 +479,13 @@ public class DataLoader {
 
         saveName = saveName.trim();
 
-        if (saveName.contains("/") || saveName.contains("\\") || saveName.contains("|") || saveName.contains("\n") || saveName.contains("\r")) {
+        if (saveName.contains("/") || saveName.contains("\\") || saveName.contains("|") || saveName.contains("\n")
+                || saveName.contains("\r")) {
             return null;
         }
 
         try {
-            // Find the save file inside the designated save directory.
+            // Find the save file.
             Path saveFolder = Paths.get(saveDirectory).toAbsolutePath().normalize();
             Path saveFile = saveFolder.resolve(saveName + ".txt").normalize();
 
@@ -492,7 +495,6 @@ public class DataLoader {
 
             // Read the saved information.
             Map<String, String> savedFields = new LinkedHashMap<>();
-            List<String[]> savedItems = new ArrayList<>();
             List<String> visitedRoomIDs = new ArrayList<>();
             List<String> completedPuzzleIDs = new ArrayList<>();
 
@@ -515,7 +517,7 @@ public class DataLoader {
                             if (data.length != 5) {
                                 return null;
                             }
-                            savedItems.add(data);
+                            // Inventory restoration is currently optional.
                             break;
 
                         case "VISITED_ROOM":
@@ -533,7 +535,8 @@ public class DataLoader {
                             break;
 
                         default:
-                            if (data.length != 2 || savedFields.put(label, data[1].trim()) != null) {
+                            if (data.length != 2
+                                    || savedFields.put(label, data[1].trim()) != null) {
                                 return null;
                             }
                             break;
@@ -541,9 +544,9 @@ public class DataLoader {
                 }
             }
 
-            // Check that the required saved information exists.
-            String[] requiredFields = {"SAVE_NAME", "PLAYER_NAME", "CURRENT_HP", "MAX_HP", "ATTACK", "DEFENSE", "CURRENT_ROOM",
-                    "SILVER_COINS", "GOLD_COINS", "GAME_COMPLETED", "EQUIPPED_WEAPON", "EQUIPPED_ARMOR"
+            // Check that the required information exists.
+            String[] requiredFields = {"SAVE_NAME", "PLAYER_NAME", "CURRENT_HP", "MAX_HP", "ATTACK", "DEFENSE",
+                    "CURRENT_ROOM", "SILVER_COINS", "GOLD_COINS", "GAME_COMPLETED"
             };
 
             for (String field : requiredFields) {
@@ -556,30 +559,34 @@ public class DataLoader {
                 return null;
             }
 
+            if (savedFields.get("PLAYER_NAME").isEmpty()) {
+                return null;
+            }
+
             String completed = savedFields.get("GAME_COMPLETED");
 
             if (!completed.equals("true") && !completed.equals("false")) {
                 return null;
             }
 
-            // Recreate the game world using the existing game data.
+            // Restore the game world using available data.
             GameWorld restoredWorld = new GameWorld();
 
             for (Room room : loadRooms()) {
                 restoredWorld.addRoom(room);
             }
 
-            restoredWorld.getItems().addAll(loadItems());
-
-            for (Enemy enemy : loadEnemies()) {
-                restoredWorld.addEnemy(enemy);
+            // Restore puzzles if their data is available.
+            try {
+                for (Puzzle puzzle : loadPuzzles()) {
+                    restoredWorld.addPuzzle(puzzle);
+                }
+            } catch (RuntimeException e) {
+                System.out.println("Puzzle data could not be restored.");
             }
 
-            for (Puzzle puzzle : loadPuzzles()) {
-                restoredWorld.addPuzzle(puzzle);
-            }
-
-            // TODO: Load NPCs when NPC loading is implemented.
+            // Items, enemies, and NPCs are not required to load the saved player.
+            // They can be added to the world later when their loaders are ready.
 
             // Restore the player's current room.
             Room currentRoom = restoredWorld.getRoomByID(savedFields.get("CURRENT_ROOM"));
@@ -589,151 +596,37 @@ public class DataLoader {
             }
 
             // Restore visited rooms.
+            List<String> restoredVisitedRooms = new ArrayList<>();
+
             for (String roomID : visitedRoomIDs) {
-                if (restoredWorld.getRoomByID(roomID) == null) {
-                    return null;
+                if (restoredWorld.getRoomByID(roomID) != null && !restoredVisitedRooms.contains(roomID)) {
+                    restoredVisitedRooms.add(roomID);
                 }
             }
 
-            // Restore inventory.
-            Inventory inventory = new Inventory(Inventory.SATCHEL_CAPACITY);
-
-            for (String[] data : savedItems) {
-
-                String itemID = data[1].trim();
-                String itemType = data[2].trim();
-
-                int quantity = Integer.parseInt(data[3].trim());
-                int itemState = Integer.parseInt(data[4].trim());
-
-                // Find the item using its ID.
-                Item item = null;
-
-                for (Item availableItem : restoredWorld.getItems()) {
-                    if (availableItem.getId().equalsIgnoreCase(itemID)) {
-                        item = availableItem;
-                        break;
-                    }
-                }
-
-                if (item == null) {
-                    return null;
-                }
-
-                item.setQuantity(quantity);
-
-                // Restore the item's specific state.
-                switch (itemType) {
-
-                    case "WEAPON":
-                        if (!(item instanceof Weapon)) {
-                            return null;
-                        }
-                        ((Weapon) item).setAttackCounter(itemState);
-                        break;
-
-                    case "ARMOR":
-                        if (!(item instanceof Armor)) {
-                            return null;
-                        }
-                        ((Armor) item).setHitsTakenCounter(itemState);
-                        break;
-
-                    case "CONSUMABLE":
-                        if (!(item instanceof Consumable)) {
-                            return null;
-                        }
-                        break;
-
-                    case "KEY_ITEM":
-                        if (!(item instanceof KeyItem)) {
-                            return null;
-                        }
-                        break;
-
-                    case "ITEM":
-                        if (item instanceof Weapon || item instanceof Armor || item instanceof Consumable || item instanceof KeyItem) {
-                            return null;
-                        }
-                        break;
-
-                    default:
-                        return null;
-                }
-
-                if (!inventory.addItem(item)) {
-                    return null;
-                }
+            // Make sure the current room is included in visited rooms.
+            if (!restoredVisitedRooms.contains(currentRoom.getRoomID())) {
+                restoredVisitedRooms.add(currentRoom.getRoomID());
             }
 
-            // Restore the normal inventory capacity.
-            inventory.setMaxCapacity(Inventory.BASE_CAPACITY);
+            // Restore an empty inventory until item loading is implemented.
+            Inventory inventory = new Inventory(Inventory.BASE_CAPACITY);
 
-            if (inventory.getUsedSlots() > inventory.getEffectiveCapacity()) {
-                return null;
-            }
-
-            // Restore equipped weapon.
-            Weapon equippedWeapon = null;
-            String weaponID = savedFields.get("EQUIPPED_WEAPON");
-
-            if (!weaponID.isEmpty()) {
-                for (Item item : inventory) {
-                    if (item instanceof Weapon && item.getId().equalsIgnoreCase(weaponID)) {
-                        equippedWeapon = (Weapon) item;
-                        break;
-                    }
-                }
-
-                if (equippedWeapon == null) {
-                    return null;
-                }
-            }
-
-            // Restore equipped armor.
-            Armor equippedArmor = null;
-            String armorID = savedFields.get("EQUIPPED_ARMOR");
-
-            if (!armorID.isEmpty()) {
-                for (Item item : inventory) {
-                    if (item instanceof Armor && item.getId().equalsIgnoreCase(armorID)) {
-                        equippedArmor = (Armor) item;
-                        break;
-                    }
-                }
-
-                if (equippedArmor == null) {
-                    return null;
-                }
-            }
-
-            // Restore completed puzzles.
+            // Restore completed puzzles when their data is available.
             for (String puzzleID : completedPuzzleIDs) {
 
                 Puzzle puzzle = restoredWorld.getPuzzleByID(puzzleID);
 
-                if (puzzle == null) {
-                    return null;
-                }
-
-                puzzle.setCompleted(true);
-
-                // Also update the puzzle instance attached to its room, if separate.
-                for (Room room : restoredWorld.getRooms()) {
-                    for (Puzzle roomPuzzle : room.getPuzzles()) {
-                        if (roomPuzzle.getPuzzleID().equalsIgnoreCase(puzzleID)) {
-                            roomPuzzle.setCompleted(true);
-                        }
-                    }
+                if (puzzle != null) {
+                    puzzle.setCompleted(true);
                 }
             }
 
-            // Recreate the player with the saved information.
+            // Recreate the player using the saved information.
             Player restoredPlayer = new Player(savedFields.get("PLAYER_NAME"), Integer.parseInt(savedFields.get("CURRENT_HP")),
-                    Integer.parseInt(savedFields.get("MAX_HP")), Integer.parseInt(savedFields.get("ATTACK")),
-                    Integer.parseInt(savedFields.get("DEFENSE")), inventory, currentRoom, equippedWeapon, equippedArmor,
-                    Integer.parseInt(savedFields.get("SILVER_COINS")), Integer.parseInt(savedFields.get("GOLD_COINS")),
-                    visitedRoomIDs, Boolean.parseBoolean(completed)
+                    Integer.parseInt(savedFields.get("MAX_HP")), Integer.parseInt(savedFields.get("ATTACK")), Integer.parseInt(savedFields.get("DEFENSE")),
+                    inventory, currentRoom, null, null, Integer.parseInt(savedFields.get("SILVER_COINS")),
+                    Integer.parseInt(savedFields.get("GOLD_COINS")), restoredVisitedRooms, Boolean.parseBoolean(completed)
             );
 
             return new GameMemory(saveName, restoredPlayer, restoredWorld);
