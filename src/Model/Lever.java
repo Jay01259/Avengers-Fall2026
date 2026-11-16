@@ -32,7 +32,7 @@ public class Lever {
     }
 
     public String getStateName() {
-        return isOn ? "on" : "off";
+        return isOn ? "On" : "Off";
     }
 
     public boolean matches(String typedName) {

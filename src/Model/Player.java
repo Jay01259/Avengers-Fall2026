@@ -3,7 +3,6 @@ package Model;
 import java.util.ArrayList;
 import java.util.List;
 
-//Player feature - Jay
 
 public class Player extends Character {
 
@@ -15,13 +14,6 @@ public class Player extends Character {
     private int goldCoins;
     private List<String> visitedRoomsIDs;
     private boolean gameCompleted;
-
-    /*
-    Check doc to see if player can check which puzzles they have completed without being
-    in the room with the puzzle. If so, we can add a list of completed puzzles to the player class.
-
-    private List<String> completedPuzzlesID;
-    */
 
     public Player(String name, int currentHP, int maxHP, int attack, int defense, Inventory inventory,
                   Room currentRoom, Weapon equippedWeapon, Armor equippedArmor, int silverCoins,
@@ -45,29 +37,150 @@ public class Player extends Character {
     }
 
     public boolean pickUpItem(Item item) {
-        // Implement
+        if (item == null || inventory == null) {
+            return false;
+        }
+
+        if (!inventory.addItem(item)) {
+            return false;
+        }
+
+        if (currentRoom != null && currentRoom.getItems().contains(item)) {
+            currentRoom.removeItem(item);
+        }
+
+        return true;
     }
 
+    // Drops an item from the player's inventory into the current room.
     public boolean dropItem(Item item) {
-        // Implement
+        if (item == null || inventory == null || currentRoom == null || !inventory.contains(item) || !item.isDroppable()) {
+            return false;
+        }
+
+        Item droppedItem = item;
+
+        // Create a separate item when dropping one from a stack.
+        if (item instanceof Consumable && item.getQuantity() > 1) {
+            Consumable consumable = (Consumable) item;
+
+            droppedItem = new Consumable(item.getId(), item.getName(), item.getDescription(),
+                    item.getValueSilver(), consumable.getHealAmount(), 1
+            );
+
+            droppedItem.setQuestItem(item.isQuestItem());
+            droppedItem.setDroppable(item.isDroppable());
+        }
+
+        Item removedItem = inventory.removeItem(item);
+
+        if (removedItem == null) {
+            return false;
+        }
+
+        currentRoom.addItem(droppedItem);
+
+        return true;
     }
 
+    // Inspects an item and returns its name and description.
     public String inspectItem(Item item) {
-        // Implement
+        if (item == null) {
+            return "Item cannot be inspected.";
+        }
+
+        return "Item: " + item.getName() + "\nDescription: " + item.getDescription();
     }
 
-    public boolean useItem(Item item) {
-        // Implement
+    // Uses a consumable item or a room-specific key.
+    public boolean useItem(Item item, int amount) {
+        if (item == null || inventory == null || amount <= 0 || !inventory.contains(item)) {
+            return false;
+        }
+
+        // Use consumable items.
+        if (item instanceof Consumable) {
+            Consumable consumable = (Consumable) item;
+
+            if (amount > consumable.getQuantity()) {
+                return false;
+            }
+
+            int healingAmount = consumable.getHealAmount() * amount;
+
+            // Do not consume items if no health can be restored.
+            if (heal(healingAmount) == 0) {
+                return false;
+            }
+
+            consumable.removeQuantity(amount);
+
+            // Remove the item entirely when its quantity reaches zero.
+            if (consumable.getQuantity() == 0) {
+                inventory.removeItem(consumable);
+            }
+
+            return true;
+        }
+
+        // Use room-specific keys.
+        if (item instanceof KeyItem && amount == 1 && currentRoom != null) {
+            KeyItem key = (KeyItem) item;
+            String targetRoomID = key.getRoomId();
+
+            if (targetRoomID == null) {
+                return false;
+            }
+
+            return targetRoomID.equalsIgnoreCase(currentRoom.getNorth()) || targetRoomID.equalsIgnoreCase(currentRoom.getEast())
+                    || targetRoomID.equalsIgnoreCase(currentRoom.getSouth()) || targetRoomID.equalsIgnoreCase(currentRoom.getWest());
+        }
+
+        return false;
     }
 
-    // Use if/else statements to check if the item is a weapon or armor, and then equip it accordingly.
+    // Equips a weapon or armor from the player's inventory.
     public boolean equipItem(Item item) {
-        // Implement
+        if (item == null || inventory == null || !inventory.contains(item)) {
+            return false;
+        }
+
+        if (item instanceof Weapon) {
+            equippedWeapon = (Weapon) item;
+            return true;
+        }
+        else if (item instanceof Armor) {
+            equippedArmor = (Armor) item;
+            return true;
+        }
+
+        return false;
     }
 
-    // Use if/else statements to check if the item is a weapon or armor, and then unequip it accordingly.
+    // Unequips a weapon or armor from the player.
     public boolean unequipItem(Item item) {
-        // Implement
+        if (item == null || inventory == null || !inventory.contains(item)) {
+            return false;
+        }
+
+        if (item instanceof Weapon) {
+            if (equippedWeapon == null || !equippedWeapon.getId().equalsIgnoreCase(item.getId())) {
+                return false;
+            }
+
+            equippedWeapon = null;
+            return true;
+        }
+        else if (item instanceof Armor) {
+            if (equippedArmor == null || !equippedArmor.getId().equalsIgnoreCase(item.getId())) {
+                return false;
+            }
+
+            equippedArmor = null;
+            return true;
+        }
+
+        return false;
     }
 
     public Weapon getEquippedWeapon() {
@@ -86,6 +199,10 @@ public class Player extends Character {
         this.equippedArmor = equippedArmor;
     }
 
+
+
+    // NPC Interaction Methods
+    /*
     public boolean buyItem(String itemID, NPC npc) {
         // Implement
     }
@@ -94,6 +211,10 @@ public class Player extends Character {
         // Implement
     }
 
+    public boolean giveItem(String itemID, NPC npc) {
+        // Implement
+    }
+     */
 
 
     // Room Methods
@@ -105,8 +226,14 @@ public class Player extends Character {
         this.currentRoom = room;
     }
 
+    // Moves the player to another room and records the room as visited.
     public void moveTo(Room room) {
-        // Implement
+        if (room == null) {
+            return;
+        }
+
+        currentRoom = room;
+        markRoomVisited(room.getRoomID());
     }
 
     public void markRoomVisited(String roomID) {

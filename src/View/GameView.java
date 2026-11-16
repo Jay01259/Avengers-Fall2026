@@ -11,24 +11,25 @@ public class GameView {
     }
 
     public void displayTitle() {
-        System.out.println("Welcome to The Stygian Trail!");
+        System.out.println("THE STYGIAN TRAIL");
         System.out.println("---------------------------------------------------");
     }
 
     public void displayStartNewGame(String playerName) {
         System.out.println("For years, the city’s walls stood between its people and the monsters that roamed the forests " +
-                "beyond them and " + playerName + " spent his life preparing for the day he would cross those walls as a " +
+                "beyond them and " + playerName + " spent his life preparing for the day he would \ncross those walls as a " +
                 "Hunter. At the prestigious Caine Drux University in the heart of the country, he trained alongside his best " +
-                "friend, Segiel. One evening, after training had ended, the two decided that the night was too quiet to waste " +
-                "and slipped beyond the walls to put their skills to the test. What began as a harmless attempt to gain extra " +
+                "friend, Segiel. One evening, \nafter training had ended, the two decided that the night was too quiet to waste " +
+                "and slipped beyond the walls to put their skills to the test. What began as a \nharmless attempt to gain extra " +
                 "experience quickly turned into something neither of them could have anticipated when, after the fierce " +
-                "creature " + playerName + " was fighting off finally fell, " + playerName + " turned toward Segiel, only to " +
+                "creature " + playerName + " was fighting off \nfinally fell, " + playerName + " turned toward Segiel, only to " +
                 "find him being dragged deep into the forest toward the Dead Woods. He knew the stories surrounding those " +
-                "woods, and for the first time, the training that had always seemed sufficient no longer felt like enough. " +
-                "With Segiel gone and the sun beginning to rise, " + playerName + " returns to the city determined to find " +
+                "woods, and \nfor the first time, the training that had always seemed sufficient no longer felt like enough. " +
+                "With Segiel gone and the sun beginning to rise, " + playerName + " returns to the city \ndetermined to find " +
                 "a way into the Dead Woods to rescue his friend.");
         System.out.println();
     }
+
 
 
     // Commands
@@ -37,6 +38,8 @@ public class GameView {
         System.out.println();
         System.out.println("AVAILABLE COMMANDS");
         System.out.println("---------------------------------------------------");
+
+        System.out.println("HELP            - Display the list of available commands.");
 
         System.out.println("\nMOVEMENT / EXPLORATION");
         System.out.println("NORTH (N)       - Move north.");
@@ -84,8 +87,9 @@ public class GameView {
         System.out.println("IGNORE          - Ignore a battle reward.");
 
         System.out.println("\nGAME");
-        System.out.println("SAVE [NAME]     - Save your game.");
-        System.out.println("LOAD [NAME]     - Load a saved game.");
+        System.out.println("START           - Start the game.");
+        System.out.println("SAVE            - Save your game.");
+        System.out.println("LOAD            - Load a saved game.");
         System.out.println("QUIT            - Exit the game.");
 
         System.out.println("---------------------------------------------------");
@@ -95,8 +99,9 @@ public class GameView {
 
     // Room methods
     public void displayRoom(Room room) {
-        System.out.println("Current room: " + room.getName());
-        System.out.println("Room description: " + room.getDescription());
+
+        System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXX");
+        System.out.println(room.getFullDescription());
     }
 
     public void displayExits(List<String> exits) {
@@ -115,7 +120,7 @@ public class GameView {
         System.out.println("Items in this room:");
 
         if (items == null || items.isEmpty()) {
-            System.out.println("There are no items in this room");
+            System.out.println("There are no items in this room.");
             return;
         }
 
@@ -131,25 +136,39 @@ public class GameView {
     // Displays Player and StorageChest inventory
     public void displayInventory(Inventory inventory, boolean isStorageChest) {
 
-        if (isStorageChest) {
-            System.out.println("Storage Chest:");
-        } else {
-            System.out.println("Inventory:");
-        }
-
         if (inventory == null || inventory.isEmpty()) {
-
             if (isStorageChest) {
-                System.out.println("This chest is empty");
+                System.out.println("The chest is empty.");
             } else {
                 System.out.println("You have no items in your inventory");
             }
             return;
         }
 
-        for (Item item : inventory) {
-            System.out.println("- " + item.getName());
+        if (isStorageChest) {
+            System.out.print("Storage Chest: ");
+        } else {
+            System.out.print("You currently have ");
         }
+
+        boolean firstItem = true;
+
+        for (Item item : inventory) {
+
+            if (!firstItem) {
+                System.out.print(", ");
+            }
+
+            System.out.print("'" + item.getName() + "'");
+
+            if (item.isStackable()) {
+                System.out.print(" x" + item.getQuantity());
+            }
+
+            firstItem = false;
+        }
+
+        System.out.println();
     }
 
     public void displayHealth(Player player) {
@@ -164,7 +183,6 @@ public class GameView {
 
         System.out.println("Item: " + item.getName());
         System.out.println("Description: " + item.getDescription());
-        System.out.println("Value: " + item.getValue() + " coins");
     }
 
 
@@ -202,14 +220,19 @@ public class GameView {
     public void displayAltSkillsMenu(String skill1Name, int skill1Cooldown, String skill2Name, int skill2Cooldown) {
 
         System.out.println();
-        System.out.println("Alt Skills Menu");
+        System.out.println("Entering Alternate Skills Menu");
         System.out.println("---------------------------------------------------");
 
-        if (skill1Name == null || skill2Name == null) {
-            System.out.println("No alternate skills available.");
-        } else {
+        if (skill1Name != null) {
             System.out.println("ALT 1 - " + skill1Name + " (Cooldown: " + skill1Cooldown + ")");
+        }
+
+        if (skill2Name != null) {
             System.out.println("ALT 2 - " + skill2Name + " (Cooldown: " + skill2Cooldown + ")");
+        }
+
+        if (skill1Name == null && skill2Name == null) {
+            System.out.println("No alternate skills available.");
         }
 
         System.out.println();
@@ -230,15 +253,25 @@ public class GameView {
     // Puzzles
     public void displayPuzzle(Puzzle puzzle, boolean hasRequiredItem) {
 
-        System.out.println();
-        System.out.println("Puzzle: " + puzzle.getName());
-        System.out.println("---------------------------------------------------");
-        System.out.println(puzzle.display(hasRequiredItem));
+        if (puzzle == null) {
+            System.out.println("There is not a puzzle in this room.");
+            return;
+        }
+
+        if (!hasRequiredItem && puzzle.getLockedDescription() != null) {
+            System.out.println(puzzle.getLockedDescription());
+            return;
+        }
+
+        System.out.println(puzzle.getDescription());
 
         System.out.println();
-        System.out.println("Puzzle Commands:");
-        System.out.println("PULL [LEVER NAME] - Pull a specific lever.");
-        System.out.println("SOLVE             - Check your puzzle solution.");
-        System.out.println("RESET             - Reset the puzzle.");
+
+        for (Lever lever : puzzle.getLevers()) {
+
+            String state = lever.isOn() ? "On" : "Off";
+
+            System.out.println(lever.getDisplayName() + " is in the " + state + " state.");
+        }
     }
 }

@@ -14,7 +14,6 @@ public class GameEngine {
     GameView view = new GameView();
     Battle currentBattle;
     DataLoader dataLoader = new DataLoader("data", "saves");
-
     public static void main(String[] args) {
         GameEngine gameEngine = new GameEngine();
         gameEngine.startGame();
@@ -54,27 +53,67 @@ public class GameEngine {
             view.displayMessage("Your character's name cannot be empty.");
             playerName = scanner.nextLine().trim();
         }
+
         gameWorld = new GameWorld();
 
-        // Implement these
-        // Load rooms, items, enemies, NPCs, and puzzles using DataLoader.
+        // Load world data when available.
+        try {
+            for (Room room : dataLoader.loadRooms()) {
+                gameWorld.addRoom(room);
+            }
+        } catch (UnsupportedOperationException ignored) {
+        }
 
-        // Get the starting room (R01).
+        dataLoader.loadItems(gameWorld);
 
-        // Create the player's inventory.
+        try {
+            for (Enemy enemy : dataLoader.loadEnemies()) {
+                gameWorld.addEnemy(enemy);
+            }
+        } catch (RuntimeException ignored) {
+        }
 
-        // Initialize the player with their starting stats and inventory.
+        try {
+            for (Puzzle puzzle : dataLoader.loadPuzzles()) {
+                gameWorld.addPuzzle(puzzle);
 
-        // Mark the starting room as visited.
+                Room room = gameWorld.getRoomByID(puzzle.getRoomID());
 
-        // Display introductory story
+                if (room != null && !room.getPuzzles().contains(puzzle)) {
+                    room.getPuzzles().add(puzzle);
+                } else if (room == null) {
+                    view.displayMessage("Puzzle " + puzzle.getPuzzleID() + " references missing room: " + puzzle.getRoomID());
+                }
+            }
+
+        } catch (RuntimeException e) {
+            view.displayMessage("Error loading puzzles:");
+            e.printStackTrace();
+        }
+
+        Room startingRoom = gameWorld.getRoomByID("R01");
+        if (startingRoom == null) {
+            startingRoom = gameWorld.getStartRoom();
+        }
+        if (startingRoom == null) {
+            startingRoom = new Room("R01", "Player's Room", "Your room is a modest student chamber in the Caine Drux University dormitory.",
+                    new java.util.ArrayList<>(), new java.util.ArrayList<>(), /*new java.util.ArrayList<>(), */
+                    new java.util.ArrayList<>(), null, null, null, null);
+            gameWorld.addRoom(startingRoom);
+        }
+
+        Inventory inventory = new Inventory();
+
+        player = new Player(playerName, 100, 100, 5, 0, inventory, startingRoom, null, null, 0, 0,
+                new java.util.ArrayList<>(), false);
+
+        player.markRoomVisited(startingRoom.getRoomID());
+
         view.displayStartNewGame(playerName);
 
-        // TODO: Display the starting room.
+        view.displayRoom(startingRoom);
 
-        // TODO: Start the main game loop.
         gameLoop();
-
     }
 
     public void gameLoop() {
@@ -97,70 +136,145 @@ public class GameEngine {
 
 
 
+    // Replace processPlayerInput(...) with this
     public void processPlayerInput(String input) {
-
-        // Normalize input
-        String command = input.trim().replaceAll("\\s+", " ");
-        String upperCommand = command.toUpperCase();
-
-        // Commands without arguments
-        switch (upperCommand) {
-
-            case "HELP":
-                view.displayHelp();
-                return;
-
-            case "EXITS":
-                // Display available exits in current room
-                return;
-
-            case "INVENTORY":
-                // Display inventory
-                return;
-
-            case "CHECK HEALTH":
-                view.displayHealth(player);
-                return;
-
-            case "DISPLAY":
-                // Display current puzzle
-                return;
-
-            case "RESET":
-                // Reset current puzzle
-                return;
-
-            case "SOLVE":
-                // Check current puzzle solution
-                return;
-
-            case "OPEN CHEST":
-                // Open storage chest
-                return;
-
-            case "CLOSE CHEST":
-                // Close storage chest
-                return;
-
-            case "QUIT":
-                quitGame();
-                return;
-
-            case "SAVE":
-                saveGame();
-                return;
-
-            case "LOAD":
-                loadGame();
-                return;
-
-            case "LEAVE":
-                // Leave current room
-                return;
+        if (player == null) {
+            view.displayMessage("Game is not initialized.");
+            return;
         }
 
-        // Movement commands
-        switch (upperCommand) {
+        String command = input.trim().replaceAll("\\s+", " ");
+        if (command.isEmpty()) {
+            view.displayMessage("Please enter a command.");
+            return;
+        }
+
+        String upper = command.toUpperCase();
+        Room currentRoom = player.getCurrentRoom();
+
+        // --- No-arg commands ---
+        switch (upper) {
+            case "HELP" : {
+                view.displayHelp();
+                return;
+            }
+            case "EXITS" : {
+                java.util.List<String> exits = new java.util.ArrayList<>();
+
+                if (currentRoom.getNorth() != null && !currentRoom.getNorth().isBlank()) exits.add("North");
+                if (currentRoom.getSouth() != null && !currentRoom.getSouth().isBlank()) exits.add("South");
+                if (currentRoom.getEast() != null && !currentRoom.getEast().isBlank()) exits.add("East");
+                if (currentRoom.getWest() != null && !currentRoom.getWest().isBlank()) exits.add("West");
+
+                for (String visit : currentRoom.getVisitRooms()) {
+                    exits.add("Visit - " + visit);
+                }
+
+                if (currentRoom.getLeaveTo() != null && !currentRoom.getLeaveTo().isBlank()) {
+                    exits.add("Leave - " + currentRoom.getLeaveTo());
+                }
+
+                view.displayExits(exits);
+                return;
+            }
+            case "INVENTORY" : {
+                view.displayInventory(player.getInventory(), false);
+                return;
+            }
+            case "CHECK HEALTH" : {
+                view.displayHealth(player);
+                return;
+            }
+            case "DISPLAY" : {
+                Puzzle puzzle = gameWorld.getPuzzleInRoom(currentRoom);
+                if (puzzle == null) {
+                    view.displayMessage("You are not in a Puzzle Room.");
+                    return;
+                }
+
+                String requiredItemId = puzzle.getRequiredItemID();
+                boolean hasRequiredItem = requiredItemId == null || requiredItemId.isBlank()
+                        || player.getInventory().getItem(requiredItemId) != null;
+
+                view.displayPuzzle(puzzle, hasRequiredItem);
+                return;
+            }
+            case "RESET" : {
+                Puzzle puzzle = gameWorld.getPuzzleInRoom(currentRoom);
+                if (puzzle == null) {
+                    view.displayMessage("You are not in a Puzzle Room.");
+                    return;
+                }
+
+                view.displayMessage(puzzle.reset(currentRoom.getName()));
+                return;
+            }
+            case "SOLVE" : {
+                Puzzle puzzle = gameWorld.getPuzzleInRoom(currentRoom);
+                if (puzzle == null) {
+                    view.displayMessage("You are not in a Puzzle Room.");
+                    return;
+                }
+
+                String requiredItemId = puzzle.getRequiredItemID();
+                boolean hasRequiredItem = requiredItemId == null || requiredItemId.isBlank()
+                        || player.getInventory().getItem(requiredItemId) != null;
+
+                if (puzzle.checkSolution(hasRequiredItem)) {
+                    view.displayMessage("Your solution is correct.");
+                    view.displayMessage(puzzle.getSolveText());
+                } else {
+                    view.displayMessage("Your solution is incorrect, try again.");
+                }
+                return;
+            }
+            case "OPEN CHEST" : {
+                StorageChest chest = currentRoom.getChest();
+                if (chest == null) {
+                    view.displayMessage("There is no chest in this room.");
+                } else {
+                    view.displayMessage(chest.open());
+                }
+                return;
+            }
+            case "CLOSE CHEST" : {
+                StorageChest chest = currentRoom.getChest();
+                if (chest == null) {
+                    view.displayMessage("There is no chest in this room.");
+                } else {
+                    view.displayMessage(chest.close());
+                }
+                return;
+            }
+            case "LEAVE" : {
+                Room leaveRoom = gameWorld.getLeaveRoom(currentRoom);
+                if (leaveRoom == null) {
+                    view.displayMessage("You cannot leave this room using that command.");
+                    return;
+                }
+
+                if (!gameWorld.isRoomUnlocked(leaveRoom, player)) {
+                    view.displayMessage("The room is locked.");
+                    return;
+                }
+
+                player.setCurrentRoom(leaveRoom);
+                player.markRoomVisited(leaveRoom.getRoomID());
+                view.displayRoom(leaveRoom);
+                return;
+            }
+            case "QUIT" : {
+                quitGame();
+                return;
+            }
+            case "SAVE" : {
+                saveGame();
+                return;
+            }
+            case "LOAD" : {
+                loadGame();
+                return;
+            }
 
             case "NORTH":
             case "N":
@@ -181,109 +295,483 @@ public class GameEngine {
             case "W":
                 movePlayer("WEST");
                 return;
+
         }
 
-        // Commands that require an argument
+        // --- Commands with args ---
         String[] parts = command.split(" ", 2);
-
         String action = parts[0].toUpperCase();
         String argument = parts.length > 1 ? parts[1].trim() : "";
 
+
         switch (action) {
+            case "VISIT": {
+                if (argument.isEmpty()) {
+                    view.displayMessage("Visit where?");
+                    return;
+                }
 
-            case "VISIT":
-                // Visit specified room
-                break;
+                Room target = gameWorld.getVisitRoom(currentRoom, argument);
+                if (target == null) {
+                    view.displayMessage("You cannot go there.");
+                    return;
+                }
 
-            case "INSPECT":
-                // Inspect room, item, or enemy
-                break;
+                if (!gameWorld.isRoomUnlocked(target, player)) {
+                    view.displayMessage("The room is locked.");
+                    return;
+                }
 
-            case "PICKUP":
-                // TODO: Pick up specified item
-                break;
+                player.setCurrentRoom(target);
+                player.markRoomVisited(target.getRoomID());
+                view.displayRoom(target);
+                return;
+            }
 
-            case "DROP":
-                // Drop specified item
-                break;
+            case "INSPECT": {
+                if (argument.isEmpty()) {
+                    view.displayMessage("Inspect what?");
+                    return;
+                }
 
-            case "USE":
-                // Use specified item
-                break;
+                if (argument.equalsIgnoreCase("room") ||
+                        argument.equalsIgnoreCase(currentRoom.getName())) {
+                    view.displayMessage(currentRoom.inspect());
+                    return;
+                }
 
-            case "EQUIP":
-                // Equip specified item
-                break;
+                if (currentBattle != null && !currentBattle.isOver()) {
+                    Enemy battleEnemy = currentBattle.getEnemy();
+                    if (argument.equalsIgnoreCase("monster") ||
+                            argument.equalsIgnoreCase("enemy") ||
+                            argument.equalsIgnoreCase(battleEnemy.getName())) {
+                        view.displayEnemyStats(battleEnemy, battleEnemy.getStatusHint());
+                        return;
+                    }
+                }
 
-            case "PULL":
-                // Pull specified lever
-                break;
+                Item invItem = player.getInventory().getItem(argument);
+                if (invItem != null) {
+                    view.displayItem(invItem);
+                    return;
+                }
+
+                Item roomItem = currentRoom.findItem(argument);
+                if (roomItem != null) {
+                    view.displayItem(roomItem);
+                    return;
+                }
+
+                view.displayMessage("Item cannot be inspected.");
+                return;
+            }
+
+            case "PICKUP": {
+                if (argument.isEmpty()) {
+                    view.displayMessage("There is nothing currently available to be picked up");
+                    return;
+                }
+
+                Item roomItem = currentRoom.findItem(argument);
+                if (roomItem == null) {
+                    view.displayMessage("There is nothing currently available to be picked up");
+                    return;
+                }
+
+                if (player.pickUpItem(roomItem)) {
+                    view.displayMessage(roomItem.getName() + " was picked up.");
+                } else {
+                    view.displayMessage("cannot pick up, inventory is full. You must drop something first");
+                }
+                return;
+            }
+
+            case "DROP": {
+                if (argument.isEmpty()) {
+                    view.displayMessage("Drop what?");
+                    return;
+                }
+
+                Item invItem = player.getInventory().getItem(argument);
+                if (invItem == null) {
+                    view.displayMessage("There is no such item in inventory.");
+                    return;
+                }
+
+                if (player.dropItem(invItem)) {
+                    view.displayMessage(invItem.getName() + " was dropped.");
+                } else {
+                    view.displayMessage("You cannot drop that item.");
+                }
+                return;
+            }
+
+            case "USE": {
+                if (argument.isEmpty()) {
+                    view.displayMessage("Use what?");
+                    return;
+                }
+
+                int amount = 1;
+                String itemName = argument;
+
+                int idx = argument.toLowerCase().lastIndexOf(" x");
+                if (idx > 0) {
+                    String qty = argument.substring(idx + 2).trim();
+                    try {
+                        amount = Integer.parseInt(qty);
+                        itemName = argument.substring(0, idx).trim();
+                    } catch (NumberFormatException ignored) {
+                        amount = 1;
+                        itemName = argument;
+                    }
+                }
+
+                Item invItem = player.getInventory().getItem(itemName);
+                if (invItem == null) {
+                    view.displayMessage("You do not have that item.");
+                    return;
+                }
+
+                int beforeHP = player.getCurrentHP();
+                boolean used = player.useItem(invItem, amount);
+                if (!used) {
+                    view.displayMessage("That item cannot be used right now.");
+                    return;
+                }
+
+                int healed = player.getCurrentHP() - beforeHP;
+                if (healed > 0) {
+                    view.displayMessage("You recovered " + healed + " HP.");
+                } else {
+                    view.displayMessage("Used " + invItem.getName() + ".");
+                }
+                return;
+            }
+
+            case "EQUIP": {
+                if (argument.isEmpty()) {
+                    view.displayMessage("Equip what?");
+                    return;
+                }
+
+                Item invItem = player.getInventory().getItem(argument);
+                if (invItem == null) {
+                    view.displayMessage("Item is not in inventory.");
+                    return;
+                }
+
+                if (player.equipItem(invItem)) {
+                    view.displayMessage(invItem.getName() + " equipped.");
+                } else {
+                    view.displayMessage("That item cannot be equipped.");
+                }
+                return;
+            }
+
+            case "PULL": {
+                if (argument.isEmpty()) {
+                    view.displayMessage("Pull which lever?");
+                    return;
+                }
+
+                Puzzle puzzle = gameWorld.getPuzzleInRoom(currentRoom);
+                if (puzzle == null) {
+                    view.displayMessage("You are not in a Puzzle Room!");
+                    return;
+                }
+
+                String requiredItemId = puzzle.getRequiredItemID();
+                boolean hasRequiredItem = requiredItemId == null ||
+                        requiredItemId.isBlank() ||
+                        player.getInventory().getItem(requiredItemId) != null;
+
+                view.displayMessage(puzzle.pullLever(argument, hasRequiredItem));
+                return;
+            }
 
             case "TALK":
-                // Talk to specified NPC
-                break;
+                view.displayMessage("Talk command is not available yet.");
+                return;
 
             case "BUY":
-                // Buy specified item
-                break;
+                view.displayMessage("Buy command is not available yet.");
+                return;
 
             case "SELL":
-                // Sell specified item
-                break;
+                view.displayMessage("Sell command is not available yet.");
+                return;
 
-            case "STORE":
-                // Store specified item in chest
-                break;
+            case "STORE": {
+                StorageChest chest = currentRoom.getChest();
+                if (chest == null || !chest.isOpen()) {
+                    view.displayMessage("The chest is not open.");
+                    return;
+                }
 
-            case "RETRIEVE":
-                // Retrieve specified item from chest
-                break;
+                if (argument.isEmpty()) {
+                    view.displayMessage("Store what?");
+                    return;
+                }
 
-            case "ATTACK":
-                // Handle battle attack
-                break;
+                Item invItem = player.getInventory().getItem(argument);
+                if (invItem == null) {
+                    view.displayMessage("You do not have that item.");
+                    return;
+                }
+
+                if (chest.storeItem(invItem)) {
+                    player.getInventory().removeItem(invItem);
+                    view.displayMessage(invItem.getName() + " stored.");
+                } else {
+                    view.displayMessage("Unable to store item.");
+                }
+                return;
+            }
+
+            case "RETRIEVE": {
+                StorageChest chest = currentRoom.getChest();
+                if (chest == null || !chest.isOpen()) {
+                    view.displayMessage("The chest is not open.");
+                    return;
+                }
+
+                if (argument.isEmpty()) {
+                    view.displayMessage("Retrieve what?");
+                    return;
+                }
+
+                Item item = chest.retrieveItem(argument);
+                if (item == null) {
+                    view.displayMessage("That item is not in the chest.");
+                    return;
+                }
+
+                if (player.getInventory().addItem(item)) {
+                    view.displayMessage(item.getName() + " retrieved.");
+                } else {
+                    chest.storeItem(item);
+                    view.displayMessage("cannot pick up, inventory is full. You must drop something first");
+                }
+                return;
+            }
+
+            case "ATTACK": {
+                if (currentBattle == null || currentBattle.isOver()) {
+                    view.displayMessage("There is no battle right now.");
+                    return;
+                }
+
+                if (!currentBattle.isPlayerTurn()) {
+                    view.displayMessage("It's not your turn.");
+                    return;
+                }
+
+                int raw = player.getAttack();
+                if (player.getEquippedWeapon() != null) {
+                    raw += player.getEquippedWeapon().getAttackBonus();
+                }
+
+                int dealt = currentBattle.regularAttack(raw);
+                view.displayMessage(dealt + " damage was dealt to " +
+                        currentBattle.getEnemy().getName() + "!");
+                return;
+            }
+
+            case "SAVE":
+                saveGame(argument);
+                return;
+
+            case "LOAD":
+                loadGame();
+                return;
 
             default:
                 view.displayMessage("Invalid command. Type HELP to see available commands.");
-                break;
+                return;
         }
+
     }
 
 
 
     public void battleLoop(Enemy enemy) {
+        if (player == null || enemy == null || !player.isAlive() || !enemy.isAlive()) {
+            return;
+        }
 
-        // TODO: Initialize battle and prepare player stats.
+        int baseDefense = player.getDefense();
+        if (player.getEquippedArmor() != null) {
+            baseDefense += player.getEquippedArmor().getDefenseBonus();
+        }
 
-        // TODO: Set up the player's turn.
+        try {
+            currentBattle = new Battle(player, enemy, baseDefense, dataLoader.loadBattleRules(), new java.util.Random());
+        } catch (RuntimeException ex) {
+            currentBattle = new Battle(player, enemy);
+        }
 
-        // TODO: Display the default battle menu.
+        view.displayMessage("You've engaged in battle with " + enemy.getName() + "!");
 
-        // TODO: Process player battle commands.
+        while (!currentBattle.isOver()) {
+            if (currentBattle.isPlayerTurn()) {
+                view.displayBattleMenu(currentBattle.getMovesRemaining());
+                String input = scanner.nextLine().trim();
 
-        // TODO: End the player's turn when 3 moves are used.
+                if (input.equalsIgnoreCase("attack")) {
+                    int raw = player.getAttack();
+                    if (player.getEquippedWeapon() != null) {
+                        raw += player.getEquippedWeapon().getAttackBonus();
+                    }
 
-        // TODO: Process the enemy's turn if it is still alive.
+                    int dealt = currentBattle.regularAttack(raw);
+                    view.displayMessage(dealt + " damage was dealt to " + enemy.getName() + "!");
+                } else if (input.equalsIgnoreCase("flee")) {
+                    if (currentBattle.attemptFlee()) {
+                        view.displayMessage("You've successfully fled the battle!");
+                    } else {
+                        currentBattle.recordPlayerMove();
+                        if (enemy.isBoss()) {
+                            view.displayMessage("You're unable to flee from this battle. Fight it out!");
+                        } else {
+                            view.displayMessage("You couldn't flee from battle. Try again!");
+                        }
+                    }
+                } else if (input.equalsIgnoreCase("inspect") || input.equalsIgnoreCase("inspect monster")) {
+                    view.displayEnemyStats(enemy, enemy.getStatusHint());
+                } else if (input.equalsIgnoreCase("inventory")) {
+                    view.displayInventory(player.getInventory(), false);
+                } else {
+                    view.displayMessage("Invalid battle command.");
+                }
 
-        // TODO: Repeat until the battle ends.
+                if (!currentBattle.isOver()) {
+                    view.displayMessage("Moves remaining: " + currentBattle.getMovesRemaining());
+                }
+            } else {
+                currentBattle.enemyTurn(b -> {
+                    int raw = Battle.rawDamageFromAttack(enemy.getAttack(), 100, java.math.RoundingMode.HALF_UP);
+                    int dealt = b.damagePlayer(raw);
 
-        // TODO: Process battle rewards and dropped items.
+                    view.displayMessage(enemy.getName() + " is using a Regular Attack!");
+                    if (dealt > 0) {
+                        view.displayMessage(dealt + " damage was dealt to " + player.getName() + "!");
+                    }
+                });
+            }
+        }
 
-        // TODO: Restore player stats and equipment after battle.
+        if (currentBattle.getOutcome() == Battle.Outcome.VICTORY) {
+            java.util.List<String> rewards = new java.util.ArrayList<>();
+
+            if (currentBattle.claimRewards()) {
+                if (enemy.getSilverDrop() > 0) {
+                    player.setSilverCoins(player.getSilverCoins() + enemy.getSilverDrop());
+                    rewards.add("Silver Coins x" + enemy.getSilverDrop());
+                }
+
+                if (enemy.getGoldDrop() > 0) {
+                    player.setGoldCoins(player.getGoldCoins() + enemy.getGoldDrop());
+                    rewards.add("Gold Coins x" + enemy.getGoldDrop());
+                }
+
+                for (java.util.Map.Entry<String, Integer> entry : enemy.getItemDrops().entrySet()) {
+                    rewards.add(entry.getKey() + " x" + entry.getValue());
+                }
+            }
+
+            view.displayBattleRewards(rewards);
+        } else if (currentBattle.getOutcome() == Battle.Outcome.DEFEAT) {
+            view.displayMessage("You've fallen in battle...");
+            gameRunning = false;
+        }
+
+        currentBattle = null;
     }
 
     public void puzzleLoop(Puzzle puzzle) {
-        // Start the puzzle loop
+        Room room = player.getCurrentRoom();
 
+        // P8 needs the Beast Medallion before its levers can be pulled
+        boolean hasRequiredItem = puzzle.getRequiredItemID() == null
+                || puzzle.getRequiredItemID().isBlank()
+                || player.getInventory().getItem(puzzle.getRequiredItemID()) != null;
+
+        // Show the puzzle, its levers, and the puzzle commands
+        view.displayPuzzle(puzzle, hasRequiredItem);
+
+        // Without the required item the player can only look at it
+        if (!hasRequiredItem) {
+            return;
+        }
+
+        view.displayMessage("BACK- Step away from the puzzle.");
+
+        // Keep going until the puzzle is solved or the player types BACK
+        while (!puzzle.isCompleted()) {
+
+            view.displayMessage("What would you like to do with the puzzle?");
+            String input = scanner.nextLine().trim();
+            String upperInput = input.toUpperCase();
+
+            if (upperInput.equals("BACK")) {
+                view.displayMessage("You step away from the puzzle.");
+                return;
+            }
+            else if (upperInput.equals("DISPLAY")) {
+                if (puzzle == null) {
+                    view.displayMessage("No Puzzle available.");
+                } else {
+                    puzzleLoop(puzzle);
+                }
+                return;
+            }
+            else if (upperInput.startsWith("PULL ")) {
+                String leverName = input.substring(5).trim();
+                view.displayMessage(puzzle.pullLever(leverName, hasRequiredItem));
+            }
+            else if (upperInput.equals("RESET")) {
+                view.displayMessage(puzzle.reset(room.getName()));
+            }
+            else if (upperInput.equals("SOLVE")) {
+
+                if (puzzle.checkSolution(hasRequiredItem)) {
+                    view.displayMessage("Your solution is correct.");
+                    view.displayMessage(puzzle.getSolveText());
+
+                    // Put the reward items in the room so the player can PICKUP them
+                    for (String itemID : puzzle.getRewardItems().keySet()) {
+                        int quantity = puzzle.getRewardItems().get(itemID);
+                        Item item = gameWorld.getItemByID(itemID);
+                        for (int i = 0; i < quantity; i++) {
+                            if (item != null) {
+                                room.addItem(item);
+                            }
+                        }
+                    }
+
+                    // Unlock rooms waiting on this puzzle (P5 -> Hollows and Dead Woods, P8 -> Cave)
+                    for (Room r : gameWorld.getRooms()) {
+                        if (puzzle.getPuzzleID().equals(r.getRequiredPuzzleID())) {
+                            r.unlock();
+                        }
+                    }
+                }
+                else {
+                    view.displayMessage("Your solution is incorrect. Try again!");
+                }
+            }
+            else {
+                view.displayMessage("Puzzle commands: PULL [LEVER NAME], SOLVE, RESET, DISPLAY, BACK");
+            }
+        }
     }
 
 
 
+    // Replace movePlayer(...) with locked-room decision logic
     private void movePlayer(String direction) {
-
         Room currentRoom = player.getCurrentRoom();
-
-        // Find the adjacent room
         Room nextRoom = gameWorld.getAdjacentRoom(currentRoom, direction);
 
         if (nextRoom == null) {
@@ -291,20 +779,14 @@ public class GameEngine {
             return;
         }
 
-        // Update player's location
+        if (!gameWorld.isRoomUnlocked(nextRoom, player)) {
+            view.displayMessage("The room is locked.");
+            return;
+        }
+
         player.setCurrentRoom(nextRoom);
-
-        // Record the room as visited
         player.markRoomVisited(nextRoom.getRoomID());
-
-        // Display room information
         view.displayRoom(nextRoom);
-
-        // Implement these
-        // Display room-specific story dialogue
-        // Process randomized item spawns
-        // Process randomized enemy spawns
-        // Display NPC dialogue when applicable
     }
 
 
@@ -345,7 +827,6 @@ public class GameEngine {
 
     // Saving and loading game state
     public void saveGame(String saveName) {
-
         if (player == null || gameWorld == null) {
             view.displayMessage("Game save could not be created.");
             return;
@@ -358,16 +839,30 @@ public class GameEngine {
 
         saveName = saveName.trim();
 
-        // Create a snapshot of the current game state
+        java.nio.file.Path savePath = java.nio.file.Paths.get("saves", saveName + ".txt");
+        if (java.nio.file.Files.exists(savePath)) {
+            view.displayMessage("A save with that name already exists. Overwrite? (yes/no)");
+            String answer = scanner.nextLine().trim();
+
+            while (!answer.equalsIgnoreCase("yes") && !answer.equalsIgnoreCase("no")) {
+                view.displayMessage("Please enter yes or no.");
+                answer = scanner.nextLine().trim();
+            }
+
+            if (answer.equalsIgnoreCase("no")) {
+                view.displayMessage("Save cancelled.");
+                return;
+            }
+        }
+
         GameMemory memory = new GameMemory(saveName, player, gameWorld);
 
-        // TODO: Check whether a save with this name already exists.
-        // TODO: Ask for overwrite confirmation if necessary.
-
-        // Save the game using DataLoader
-        dataLoader.saveGame(memory);
-
-        // TODO: Display success or failure based on DataLoader's result.
+        boolean saved = dataLoader.saveGame(memory);
+        if (saved) {
+            view.displayMessage("Game saved successfully!");
+        } else {
+            view.displayMessage("Game save could not be created.");
+        }
     }
 
     public void loadGame() {
@@ -420,4 +915,15 @@ public class GameEngine {
         gameLoop();
     }
 
+    public void saveGame() {
+        view.displayMessage("Enter a name for your save file:");
+        String saveName = scanner.nextLine().trim();
+
+        if (saveName.isEmpty()) {
+            view.displayMessage("Save name cannot be empty.");
+            return;
+        }
+
+        saveGame(saveName);
+    }
 }
