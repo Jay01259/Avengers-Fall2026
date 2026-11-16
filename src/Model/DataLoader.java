@@ -32,204 +32,315 @@ public class DataLoader {
 
     public List<Room> loadRooms() {
         List<Room> rooms = new ArrayList<>();
-
-        File file = new File(dataDirectory, "rooms.txt");
+        Map<String, Item> catalog = getItemCatalog();
+        File file = resolveRoomFile();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-
             String line;
 
             while ((line = reader.readLine()) != null) {
+                String trimmed = line.trim();
 
-                if (line.trim().isEmpty()) {
+                if (trimmed.isEmpty() || trimmed.startsWith("#")) {
                     continue;
                 }
 
-                // ID | Name | Description | Exits | Chest | Unlocked by | Random enemy room
-                String[] data = line.split("\\|", -1);
+                String[] data = trimmed.split("\\|", -1);
 
-                if (data.length != 7) {
-                    System.out.println("Invalid room data: " + line);
-                    continue;
+                if (data.length != 8) {
+                    throw new IOException("Invalid room data: " + trimmed);
                 }
 
                 String roomID = data[0].trim();
                 String name = data[1].trim();
                 String description = data[2].replace("\\n", "\n");
 
-                String north = null;
-                String east = null;
-                String south = null;
-                String west = null;
-                List<String> visitRooms = new ArrayList<>();
-                String leaveTo = null;
+                String exits = data[3].trim();
+                boolean hasChest = data[4].trim().equalsIgnoreCase("true");
+                String unlockKey = data[5].trim();
+                boolean randomEnemyRoom = data[6].trim().equalsIgnoreCase("true");
+                String itemListText = data[7].trim();
 
-                for (String exit : data[3].split(",")) {
+                Room room = buildRoom(roomID, name, description, exits);
 
-                    String[] exitData = exit.split(":");
-
-                    if (exitData.length != 2) {
-                        continue;
-                    }
-
-                    String direction = exitData[0].trim().toUpperCase();
-                    String targetRoomID = exitData[1].trim();
-
-                    switch (direction) {
-                        case "NORTH":
-                            north = targetRoomID;
-                            break;
-                        case "EAST":
-                            east = targetRoomID;
-                            break;
-                        case "SOUTH":
-                            south = targetRoomID;
-                            break;
-                        case "WEST":
-                            west = targetRoomID;
-                            break;
-                        case "VISIT":
-                            visitRooms.add(targetRoomID);
-                            break;
-                        case "LEAVE":
-                            leaveTo = targetRoomID;
-                            break;
-                    }
-                }
-
-                // Items, puzzles and enemies are added to the room by their own loaders
-                Room room = new Room(roomID, name, description, null, null, null,
-                        north, east, south, west);
-
-                for (String visitID : visitRooms) {
-                    room.addVisitRoom(visitID);
-                }
-
-                if (leaveTo != null) {
-                    room.setLeaveTo(leaveTo);
-                }
-
-                // Storage chest (only the Player's Room)
-                if (data[4].trim().equalsIgnoreCase("true")) {
+                if (hasChest) {
                     room.setChest(new StorageChest());
                 }
 
-                // What unlocks the room: a key (W07, W08) or a puzzle (P5, P8). "-" means not locked.
-                String unlockedBy = data[5].trim();
-
-                if (unlockedBy.startsWith("W")) {
-                    room.lockWithKey(unlockedBy);
-                }
-                else if (unlockedBy.startsWith("P")) {
-                    room.lockWithPuzzle(unlockedBy);
+                if (!unlockKey.isEmpty() && !"-".equals(unlockKey)) {
+                    if (unlockKey.startsWith("W")) {
+                        room.lockWithKey(unlockKey);
+                    } else if (unlockKey.startsWith("P")) {
+                        room.lockWithPuzzle(unlockKey);
+                    }
                 }
 
-                // Random enemy room (Storage Room #2, The Hollows, Crucible Bounty)
-                room.setRandomEnemyRoom(data[6].trim().equalsIgnoreCase("true"));
+                room.setRandomEnemyRoom(randomEnemyRoom);
+
+                if (!itemListText.isEmpty() && !"-".equals(itemListText)) {
+                    for (String itemID : itemListText.split(",")) {
+                        String cleanID = itemID.trim();
+                        if (cleanID.isEmpty()) {
+                            continue;
+                        }
+
+                        Item item = catalog.get(cleanID);
+                        if (item != null) {
+                            room.addItem(createItemCopy(item));
+                        }
+                    }
+                }
 
                 rooms.add(room);
             }
-        } catch (IOException e) {
-            System.out.println("Error loading rooms: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            throw new RuntimeException("Error loading rooms: " + e.getMessage(), e);
         }
+
         return rooms;
     }
 
+    private File resolveRoomFile() {
+        File file = new File(dataDirectory, "rooms.txt");
+        if (file.isFile()) {
+            return file;
+        }
 
-    public void loadItems(GameWorld gameWorld) {
-        File file = new File(dataDirectory, "Items.txt");
+        file = new File(dataDirectory, "room.txt");
+        if (file.isFile()) {
+            return file;
+        }
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        file = new File("src", "room.txt");
+        if (file.isFile()) {
+            return file;
+        }
 
-            String line;
+        file = new File("src", "rooms.txt");
+        if (file.isFile()) {
+            return file;
+        }
 
-            while ((line = reader.readLine()) != null) {
+        throw new RuntimeException("Missing room data file in directory: " + dataDirectory);
+    }
 
-                line = line.trim();
+    private Room buildRoom(String roomID, String name, String description, String exits) {
+        String north = null;
+        String east = null;
+        String south = null;
+        String west = null;
+        List<String> visitRooms = new ArrayList<>();
+        String leaveTo = null;
 
-                if (line.isEmpty() || line.startsWith("#")) {
+        if (exits != null && !exits.isBlank() && !"-".equals(exits)) {
+            for (String exit : exits.split(",")) {
+                String token = exit.trim();
+                if (token.isEmpty()) {
                     continue;
                 }
 
-                String[] data = line.split("\\|", -1);
-
-                if (data.length != 10) {
-                    throw new IOException("Invalid item data: " + line);
+                String[] exitData = token.split(":", 2);
+                if (exitData.length < 2) {
+                    continue;
                 }
 
-                String id = data[0].trim();
-                String name = data[1].trim();
-                String type = data[2].trim().toUpperCase();
-                String description = data[3].trim();
+                String direction = exitData[0].trim().toUpperCase();
+                String targetRoomID = exitData[1].trim();
 
-                int value = Integer.parseInt(data[4].trim());
-
-                int attackBonus = data[5].equals("-") ? 0 : Integer.parseInt(data[5].trim());
-                int durability = data[6].equals("-") ? 0 : Integer.parseInt(data[6].trim());
-                int defenseBonus = data[7].equals("-") ? 0 : Integer.parseInt(data[7].trim());
-                int healAmount = data[8].equals("-") ? 0 : Integer.parseInt(data[8].trim());
-
-                String[] roomIDs = data[9].split(",");
-
-                Item item;
-
-                // Create the appropriate item object.
-                switch (type) {
-
-                    case "WEAPON":
-                        item = new Weapon(id, name, description, value,
-                                attackBonus, durability);
+                switch (direction) {
+                    case "NORTH":
+                        north = targetRoomID;
                         break;
-
-                    case "ARMOR":
-                        item = new Armor(id, name, description, value,
-                                defenseBonus, durability);
+                    case "EAST":
+                        east = targetRoomID;
                         break;
-
-                    case "CONSUMABLE":
-                        item = new Consumable(id, name, description, value,
-                                healAmount, 1);
+                    case "SOUTH":
+                        south = targetRoomID;
                         break;
-
-                    case "KEY":
-                        String targetRoom = id.equals("W07") ? "R15" : "R11";
-                        String doorDirection = id.equals("W07") ? "EAST" : "NORTH";
-
-                        item = new KeyItem(id, name, description, value,
-                                targetRoom, doorDirection);
+                    case "WEST":
+                        west = targetRoomID;
                         break;
-
+                    case "VISIT":
+                        visitRooms.add(targetRoomID);
+                        break;
+                    case "LEAVE":
+                        leaveTo = targetRoomID;
+                        break;
                     default:
-                        item = new Item(id, name, description, value);
                         break;
-                }
-
-                // Mark quest-related items.
-                if (id.equals("W09") || id.equals("W16") || id.equals("FP01")) {
-                    item.setQuestItem(true);
-                }
-
-                // Add the item definition to the game world.
-                gameWorld.addItem(item);
-
-                // Add a separate copy to each designated room.
-                for (String roomID : roomIDs) {
-
-                    Room room = gameWorld.getRoomByID(roomID.trim());
-
-                    // FP01 is added after the final boss is defeated.
-                    if (room != null && !id.equals("FP01")) {
-
-                        Item roomItem = createItemCopy(item);
-
-                        room.addItem(roomItem);
-                    }
                 }
             }
+        }
 
+        Room room = new Room(roomID, name, description, null, null, null, north, east, south, west);
+
+        for (String visitRoom : visitRooms) {
+            room.addVisitRoom(visitRoom);
+        }
+
+        if (leaveTo != null) {
+            room.setLeaveTo(leaveTo);
+        }
+
+        return room;
+    }
+
+    private Map<String, Item> getItemCatalog() {
+        Map<String, Item> catalog = new LinkedHashMap<>();
+        for (Item item : loadItems()) {
+            catalog.put(item.getId(), item);
+        }
+        return catalog;
+    }
+
+
+    public List<Item> loadItems() {
+        List<Item> loadedItems = new ArrayList<>();
+        File file = resolveItemFile();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                String trimmed = line.trim();
+
+                if (trimmed.isEmpty() || trimmed.startsWith("#")) {
+                    continue;
+                }
+
+                String[] data = trimmed.split("\\|", -1);
+
+                if (data.length != 9) {
+                    throw new IOException("Invalid item data: " + trimmed);
+                }
+
+                Item item = parseItem(data);
+                loadedItems.add(item);
+            }
         } catch (IOException | NumberFormatException e) {
             throw new RuntimeException("Error loading items: " + e.getMessage(), e);
         }
+
+        return loadedItems;
+    }
+
+    public void loadItems(GameWorld gameWorld) {
+        if (gameWorld == null) {
+            return;
+        }
+
+        for (Item item : loadItems()) {
+            gameWorld.addItem(item);
+
+            for (String roomID : getRoomIDs(item)) {
+                Room room = gameWorld.getRoomByID(roomID.trim());
+                if (room != null && !"FP01".equals(item.getId())) {
+                    room.addItem(createItemCopy(item));
+                }
+            }
+        }
+    }
+
+    private File resolveItemFile() {
+        File file = new File(dataDirectory, "items.txt");
+        if (file.isFile()) {
+            return file;
+        }
+
+        file = new File(dataDirectory, "Items.txt");
+        if (file.isFile()) {
+            return file;
+        }
+
+        throw new RuntimeException("Missing item data file in directory: " + dataDirectory);
+    }
+
+    private Item parseItem(String[] data) throws IOException {
+        String id = data[0].trim();
+        String type = data[1].trim().toUpperCase();
+        String name = data[2].trim();
+        String description = data[3].trim();
+        int valueSilver = Integer.parseInt(data[4].trim());
+        int statValue = data[5].trim().equals("-") ? 0 : Integer.parseInt(data[5].trim());
+        int durability = data[6].trim().equals("-") ? 0 : Integer.parseInt(data[6].trim());
+        String roomText = data[7].trim();
+        String effectText = data[8].trim();
+
+        Item item;
+
+        switch (type) {
+            case "WEAPON":
+                item = new Weapon(id, name, description, valueSilver, statValue, durability);
+                break;
+            case "ARMOR":
+                item = new Armor(id, name, description, valueSilver, statValue, durability);
+                break;
+            case "CONSUMABLE":
+                item = new Consumable(id, name, description, valueSilver, statValue, 1);
+                break;
+            case "KEY":
+                String target = effectText.startsWith("UNLOCKS:")
+                        ? effectText.substring("UNLOCKS:".length()).trim()
+                        : effectText;
+                String roomId = target;
+                String doorId = "";
+
+                if (target.contains(":")) {
+                    String[] keyTarget = target.split(":", 2);
+                    roomId = keyTarget[0].trim();
+                    doorId = keyTarget[1].trim();
+                }
+
+                item = new KeyItem(id, name, description, valueSilver, roomId, doorId);
+                break;
+            default:
+                item = new Item(id, name, description, valueSilver);
+                break;
+        }
+
+        if (effectText.contains("QUEST_ITEM") || "W09".equals(id) || "W12".equals(id)
+                || "W16".equals(id) || "FP01".equals(id)) {
+            item.setQuestItem(true);
+        }
+
+        if (roomText != null && !roomText.isBlank() && !"-".equals(roomText)) {
+            item.setDescription(item.getDescription() + "\nSpawn locations: " + roomText);
+        }
+
+        if ("CURRENCY".equals(type)) {
+            item.setStackable(true);
+            item.setQuantity(Math.max(1, statValue));
+        }
+
+        return item;
+    }
+
+    private List<String> getRoomIDs(Item item) {
+        List<String> roomIDs = new ArrayList<>();
+
+        if (item == null || item.getDescription() == null) {
+            return roomIDs;
+        }
+
+        String description = item.getDescription();
+        int index = description.indexOf("Spawn locations:");
+        if (index < 0) {
+            return roomIDs;
+        }
+
+        String roomText = description.substring(index + "Spawn locations:".length()).trim();
+        if (roomText.isEmpty() || "-".equals(roomText)) {
+            return roomIDs;
+        }
+
+        for (String roomID : roomText.split(",")) {
+            String trimmed = roomID.trim();
+            if (!trimmed.isEmpty()) {
+                roomIDs.add(trimmed);
+            }
+        }
+
+        return roomIDs;
     }
 
 

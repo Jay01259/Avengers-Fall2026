@@ -1,19 +1,18 @@
-# ID|Name|Type|Description|ValueSilver|AttackBonus|Durability|DefenseBonus|HealAmount|RoomIDs
-
-W01|Valence Sword|WEAPON|A long sword with a scarlet blade. This sword can withstand any beast.|0|25|-1|-|-|R14,R23,R25
-W02|Sickle|WEAPON|A small curved blade that is useful in hand to hand combat|65|5|4|-|-|R14,R23,R25
-W03|Smiths Sword|WEAPON|A standard sword. It's nothing special|100|10|10|-|-|R03,R14,R23
-W04|Healing Elixir|CONSUMABLE|This will help heal the player quickly, giving them +50 HP|35|-|-|-|50|R13,R16,R23
-W05|Stale bread|CONSUMABLE|Gives a little HP back to player, giving them +10 HP|10|-|-|-|10|R10,R18,R23
-W06|Old fruit|CONSUMABLE|Gives little HP back to player, giving them +10 HP|10|-|-|-|10|R10,R22,R23
-W07|Basement Key|KEY|A rusty key bearing the sign of a caduceus! But it doesn't look like it opens anything in the backroom or library. It must open another locked door!|0|-|-|-|-|R11
-W08|Backroom Key|KEY|A silver key bearing the sign of a book! It must open a door in the library!|0|-|-|-|-|R12
-W09|Jade Charm|ITEM|Increases attack damage by +15 when used in a battle (can only be used once)|100|-|-|-|-|R05,R23,R25
-W10|Leather satchel|ITEM|You can carry up to 10 more items in your inventory|50|-|-|-|-|R23
-W11|Silver pin|ITEM|A beautiful silver pin adorned in beautiful gemstones, this looks like it can be worth a good deal|400|-|-|-|-|R12
-W12|Old armor plating|ARMOR|Used plating, old and rusty, can help take the impact of a few hits, but breaks quickly|45|-|3|10|-|R02,R06,R23
-W13|Monster Shell Armor|ARMOR|This armor is made of the shells of monsters. It will be much more reliable to help protect from attacks.|200|-|12|20|-|R21,R23,R25
-W14|Silver Coin|ITEM|A silver coin. These can be used to buy items if you have enough|1|-|-|-|-|R14,R18,R19,R21,R23,R24
-W15|Gold Coin|ITEM|A gold coin. These can get you something very valuable|100|-|-|-|-|R23,R24,R26,R27
-W16|Beast Medallion|ITEM|A large bronze disc. It has an intricate design. The medallion itself is encrusted with red, blue, yellow, and purple gems. On the back of the medallion, it has the engraving of an eye.|0|-|-|-|-|R21
-FP01|Stygian Greatsword|ITEM|A long silver sword, so polished one's own reflection can be seen in it. It is engraved with a remarkable design and near the ricasso of the sword is a large green eye. This is a sword only heard of in legends!|0|-|-|-|-|R27
+# id|type|name|description|valueSilver|statValue|durability|rooms|effect
+W01|WEAPON|Valence sword|A long sword with a scarlet blade. This sword can withstand any beast|0|25|-1|R26,R27|Lifesteal Strike,Crimson Lunge
+W02|WEAPON|Sickle|A small curved blade that is useful in hand to hand combat|65|5|4|R14,R23,R25|Hack 'n' Slash,Brutal Plunge
+W03|WEAPON|Smiths Sword|A standard sword. It’s nothing special|100|10|10|R03,R14,R23|Quick Strike,Sweeping Finish
+W04|CONSUMABLE|Healing Elixir|This will help heal the player quickly, giving them +50 HP|35|50|1|R13,R16,R23|HEAL
+W05|CONSUMABLE|Stale bread|Gives a little HP back to player, giving them +10 HP|10|10|1|R10,R18,R23|HEAL
+W06|CONSUMABLE|Old fruit|Gives little HP back to player, giving them +10 HP|10|10|1|R10,R22,R23|HEAL
+W07|KEY|Basement Key|A rusty key bearing the sign of a caduceus! But it doesn’t look like it opens anything in the backroom or library. It must open another locked door!|0|0|-1|R11|UNLOCKS:R15
+W08|KEY|Backroom Key|A silver key bearing the sign of a book! It must open a door in the library!|0|0|-1|R12|UNLOCKS:R11
+W09|CHARM|Jade Charm|Increases attack damage by +15 when used in a battle (can only be used once)|100|15|1|R05,R23,R25|SINGLE_BATTLE_BUFF
+W10|UTILITY|Leather satchel|You can carry up to 10 more items in your inventory|50|10|-1|R23|EXPAND_INVENTORY
+W11|VALUABLE|Silver pin|A beautiful silver pin adorn in beautiful gemstones, this looks like it can be worth a good deal|400|0|-1|R12,R22|SELL_ONLY_LOMBART
+W12|ARMOR|Old armor plating|Used plating, old and rusty, can help take the impact of a few hits, but breaks quickly|45|10|3|R02,R06,R23|QUEST_ITEM:NPC03
+W13|ARMOR|Monster Shell Armor|This armor is made of the shells of monsters. It will be much more reliable to help protect from attacks.|200|20|12|R21,R23,R25|NONE
+W14|CURRENCY|Silver Coin|A silver coin. These can be used to buy items if you have enough|1|1|-1|R14,R18,R19,R21,R23,R24|CURRENCY
+W15|CURRENCY|Gold Coin|A gold coin. These can get you something very valuable|100|100|-1|R23,R24,R26,R27|CURRENCY
+W16|KEY|Beast Medallion|A large bronze disc. It has an intricate design. The medallion itself is encrusted with red, blue, yellow, and purple gems. On the back of the medallion, it has the engraving of an eye.|0|0|-1|R21|UNLOCKS:P8
+FP01|TROPHY|Stygian Greatsword|A long silver sword, so polished one’s own reflection can be seen in it. It is engraved with a remarkable design and near the ricasso of the sword is a large green eye. This is a sword only heard of in legends!|0|0|-1|R27|END_GAME_PRIZE

@@ -1,6 +1,6 @@
 package Model;
 
-public class Consumable extends Item {
+public class Consumable extends Model.Item {
     private int healAmount;
 
     public Consumable(String id, String name, String description, int valueSilver,
