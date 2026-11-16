@@ -10,7 +10,7 @@ public class Room {
     private String description;
     private List<Item> items;
     private List<Puzzle> puzzles;
-    private List<NPC> npcs;
+    //private List<NPC> npcs;
     private List<Enemy> enemies;
 
     private String north;
@@ -28,14 +28,15 @@ public class Room {
     private boolean randomEnemyRoom;
     private StorageChest chest;
 
+    // add NPC back in when implemented
     public Room(String roomID, String name, String description, List<Item> items, List<Puzzle> puzzles,
-                List<NPC> npcs, List<Enemy> enemies, String north, String east, String south, String west) {
+                /*List<NPC> npcs,*/ List<Enemy> enemies, String north, String east, String south, String west) {
         this.roomID = roomID;
         this.name = name;
         this.description = description;
         this.items = items == null ? new ArrayList<>() : new ArrayList<>(items);
         this.puzzles = puzzles == null ? new ArrayList<>() : new ArrayList<>(puzzles);
-        this.npcs = npcs == null ? new ArrayList<>() : new ArrayList<>(npcs);
+        //this.npcs = npcs == null ? new ArrayList<>() : new ArrayList<>(npcs);
         this.enemies = enemies == null ? new ArrayList<>() : new ArrayList<>(enemies);
         this.north = north;
         this.east = east;
@@ -61,9 +62,11 @@ public class Room {
         return puzzles;
     }
 
+    /*
     public List<NPC> getNPCs() {
         return npcs;
     }
+     */
 
     public List<Enemy> getEnemies() {
         return enemies;
@@ -153,7 +156,7 @@ public class Room {
         if (!locked) {
             return true;
         }
-        if (requiredKeyID != null && player.getInventory().hasItem(requiredKeyID)) {
+        if (requiredKeyID != null && player.getInventory().getItem(requiredKeyID) != null) {
             locked = false;
         }
         return !locked;
@@ -242,7 +245,7 @@ public class Room {
         if (!locked) {
             return true;
         }
-        if (requiredKeyID != null && player.getInventory().hasItem(requiredKeyID)) {
+        if (requiredKeyID != null && player.getInventory().getItem(requiredKeyID) != null) {
             locked = false;
         }
         return !locked;

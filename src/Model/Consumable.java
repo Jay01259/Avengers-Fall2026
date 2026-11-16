@@ -1,4 +1,4 @@
-package Kelvin;
+package Model;
 
 public class Consumable extends Item {
     private int healAmount;

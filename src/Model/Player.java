@@ -202,6 +202,7 @@ public class Player extends Character {
 
 
     // NPC Interaction Methods
+    /*
     public boolean buyItem(String itemID, NPC npc) {
         // Implement
     }
@@ -213,7 +214,7 @@ public class Player extends Character {
     public boolean giveItem(String itemID, NPC npc) {
         // Implement
     }
-
+     */
 
 
     // Room Methods

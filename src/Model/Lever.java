@@ -1,3 +1,5 @@
+package Model;
+
 public class Lever {
     private String leverID;
     private String displayName;
@@ -30,7 +32,7 @@ public class Lever {
     }
 
     public String getStateName() {
-        return isOn ? "on" : "off";
+        return isOn ? "On" : "Off";
     }
 
     public boolean matches(String typedName) {
