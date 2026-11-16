@@ -1,4 +1,4 @@
-package Model;
+﻿package Model;
 
 import java.util.*;
 
@@ -136,3 +136,4 @@ public class Puzzle {
         return null;
     }
 }
+

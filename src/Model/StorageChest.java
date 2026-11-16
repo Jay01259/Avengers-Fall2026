@@ -1,4 +1,4 @@
-package Model;
+﻿package Model;
 
 import java.util.ArrayList;
 
@@ -74,3 +74,4 @@ public class StorageChest {
     }
 
 }
+

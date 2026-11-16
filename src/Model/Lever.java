@@ -1,4 +1,4 @@
-package Model;
+﻿package Model;
 
 public class Lever {
     private String leverID;
@@ -51,3 +51,4 @@ public class Lever {
         this.isOn = isOn;
     }
 }
+

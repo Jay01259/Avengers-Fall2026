@@ -1,4 +1,4 @@
-package Controller;
+﻿package Controller;
 
 import java.util.Scanner;
 import View.GameView;
@@ -14,11 +14,13 @@ public class GameEngine {
     GameView view = new GameView();
     Battle currentBattle;
     DataLoader dataLoader = new DataLoader("data", "saves");
+    // Purpose: Launches the game from the command line so players can start a new or saved session.
     public static void main(String[] args) {
         GameEngine gameEngine = new GameEngine();
         gameEngine.startGame();
     }
 
+    // Purpose: Presents the startup choice menu and begins a new or loaded game based on the player's selection.
     public void startGame() {
 
         while (true) {
@@ -44,6 +46,7 @@ public class GameEngine {
 
 
     // Update this method
+    // Purpose: Builds a fresh world, loads the room and item definitions, and initializes a new player character.
     public void startNewGame() {
         view.displayTitle();
         view.displayMessage("What is your character's name?");
@@ -116,6 +119,7 @@ public class GameEngine {
         gameLoop();
     }
 
+    // Purpose: Runs the main game loop until the player quits, dies, or finishes the game.
     public void gameLoop() {
 
         gameRunning = true;
@@ -137,6 +141,7 @@ public class GameEngine {
 
 
     // Replace processPlayerInput(...) with this
+    // Purpose: Interprets the player's command and routes it to the correct world, inventory, movement, or combat logic.
     public void processPlayerInput(String input) {
         if (player == null) {
             view.displayMessage("Game is not initialized.");
@@ -927,3 +932,4 @@ public class GameEngine {
         saveGame(saveName);
     }
 }
+

@@ -1,4 +1,4 @@
-package Model;
+﻿package Model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,10 +32,12 @@ public class Player extends Character {
 
 
     //Inventory Management Methods
+    // Purpose: Returns the player's active inventory container so item commands can read and modify it.
     public Inventory getInventory() {
         return inventory;
     }
 
+    // Purpose: Adds an item from the current room into the inventory and removes it from the room when successful.
     public boolean pickUpItem(Item item) {
         if (item == null || inventory == null) {
             return false;
@@ -53,6 +55,7 @@ public class Player extends Character {
     }
 
     // Drops an item from the player's inventory into the current room.
+    // Purpose: Drops an item from inventory into the current room so the room can receive it again.
     public boolean dropItem(Item item) {
         if (item == null || inventory == null || currentRoom == null || !inventory.contains(item) || !item.isDroppable()) {
             return false;
@@ -84,6 +87,7 @@ public class Player extends Character {
     }
 
     // Inspects an item and returns its name and description.
+    // Purpose: Returns a readable item inspection string for the current item being examined.
     public String inspectItem(Item item) {
         if (item == null) {
             return "Item cannot be inspected.";
@@ -93,6 +97,7 @@ public class Player extends Character {
     }
 
     // Uses a consumable item or a room-specific key.
+    // Purpose: Uses a consumable or key item from inventory when the situation allows it.
     public boolean useItem(Item item, int amount) {
         if (item == null || inventory == null || amount <= 0 || !inventory.contains(item)) {
             return false;
@@ -140,6 +145,7 @@ public class Player extends Character {
     }
 
     // Equips a weapon or armor from the player's inventory.
+    // Purpose: Equips a weapon or armor from inventory so the player gains its combat bonuses.
     public boolean equipItem(Item item) {
         if (item == null || inventory == null || !inventory.contains(item)) {
             return false;
@@ -158,6 +164,7 @@ public class Player extends Character {
     }
 
     // Unequips a weapon or armor from the player.
+    // Purpose: Unequips a currently equipped weapon or armor and clears the slot.
     public boolean unequipItem(Item item) {
         if (item == null || inventory == null || !inventory.contains(item)) {
             return false;
@@ -183,18 +190,22 @@ public class Player extends Character {
         return false;
     }
 
+    // Purpose: Returns the currently equipped weapon so combat code can read its bonus.
     public Weapon getEquippedWeapon() {
         return equippedWeapon;
     }
 
+    // Purpose: Sets the active weapon slot for equipment control and combat logic.
     public void setEquippedWeapon(Weapon equippedWeapon) {
         this.equippedWeapon = equippedWeapon;
     }
 
+    // Purpose: Returns the armor currently equipped to reduce damage in combat.
     public Armor getEquippedArmor() {
         return equippedArmor;
     }
 
+    // Purpose: Sets the active armor slot to match the equipment the player is wearing.
     public void setEquippedArmor(Armor equippedArmor) {
         this.equippedArmor = equippedArmor;
     }
@@ -218,15 +229,18 @@ public class Player extends Character {
 
 
     // Room Methods
+    // Purpose: Returns the room the player is currently standing in.
     public Room getCurrentRoom() {
         return currentRoom;
     }
 
+    // Purpose: Moves the player to a different room and updates the current location state.
     public void setCurrentRoom(Room room) {
         this.currentRoom = room;
     }
 
     // Moves the player to another room and records the room as visited.
+    // Purpose: Moves the player to a target room and records it as visited for navigation and saving.
     public void moveTo(Room room) {
         if (room == null) {
             return;
@@ -236,45 +250,54 @@ public class Player extends Character {
         markRoomVisited(room.getRoomID());
     }
 
+    // Purpose: Adds a room ID to the visited list so the game can track explored locations.
     public void markRoomVisited(String roomID) {
         if (roomID != null && !visitedRoomsIDs.contains(roomID)){
             visitedRoomsIDs.add(roomID);
         }
     }
 
+    // Purpose: Checks whether the given room has already been visited during the session.
     public boolean hasVisitedRoom(String roomID) {
         return roomID != null && visitedRoomsIDs.contains(roomID);
     }
 
+    // Purpose: Returns a copy of the visited-room list so callers can inspect or save the progress safely.
     public List<String> getVisitedRoomsIDs() {
         return new ArrayList<>(visitedRoomsIDs);
     }
 
+    // Purpose: Replaces the visited map with a saved list used when restoring a player state.
     public void setVisitedRoomsIDs(List<String> visitedRoomsIDs) {
         this.visitedRoomsIDs = visitedRoomsIDs == null ? new ArrayList<>() : new ArrayList<>(visitedRoomsIDs);
     }
 
     // Currency Methods
+    // Purpose: Returns the player's silver currency total for purchases and sales.
     public int getSilverCoins() {
         return silverCoins;
     }
 
+    // Purpose: Returns the player's gold currency amount used for more valuable transactions.
     public int getGoldCoins(){
         return goldCoins;
     }
 
+    // Purpose: Sets the silver balance after a save load or a shop transaction.
     public void setSilverCoins(int amount){
         if (amount >= 0){
             this.silverCoins = amount;
         }
     }
 
+    // Purpose: Sets the gold balance after a save load or a transaction involving higher-value currency.
     public void setGoldCoins(int amount){
         if (amount >= 0){
             this.goldCoins = amount;
         }
     }
 
+    // Purpose: Spends currency using a combined silver total so purchases can work across gold and silver denominations.
     public boolean spendCoins(int amountInSilver){
         if (amountInSilver < 0){
             return false;
@@ -296,11 +319,14 @@ public class Player extends Character {
 
 
     // Game Completion Methods
+    // Purpose: Returns whether the game win condition has been reached.
     public boolean isGameCompleted() {
         return gameCompleted;
     }
 
+    // Purpose: Marks the player as having finished the main objective of the game.
     public void setGameCompleted(boolean gameCompleted) {
         this.gameCompleted = gameCompleted;
     }
 }
+

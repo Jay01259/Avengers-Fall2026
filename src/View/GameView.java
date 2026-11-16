@@ -1,4 +1,4 @@
-package View;
+﻿package View;
 
 import Model.*;
 import java.util.List;
@@ -6,17 +6,20 @@ import java.util.List;
 public class GameView {
 
     // General
+    // Purpose: Prints a message to the console for player feedback and game narration.
     public void displayMessage(String message) {
         System.out.println(message);
     }
 
+    // Purpose: Displays the visual title screen for the game introduction.
     public void displayTitle() {
         System.out.println("THE STYGIAN TRAIL");
         System.out.println("---------------------------------------------------");
     }
 
+    // Purpose: Prints the opening story setup for the player before the first room is shown.
     public void displayStartNewGame(String playerName) {
-        System.out.println("For years, the city’s walls stood between its people and the monsters that roamed the forests " +
+        System.out.println("For years, the cityâ€™s walls stood between its people and the monsters that roamed the forests " +
                 "beyond them and " + playerName + " spent his life preparing for the day he would \ncross those walls as a " +
                 "Hunter. At the prestigious Caine Drux University in the heart of the country, he trained alongside his best " +
                 "friend, Segiel. One evening, \nafter training had ended, the two decided that the night was too quiet to waste " +
@@ -33,6 +36,7 @@ public class GameView {
 
 
     // Commands
+    // Purpose: Shows all available commands so the player can learn how to interact with the game.
     public void displayHelp() {
 
         System.out.println();
@@ -98,12 +102,14 @@ public class GameView {
 
 
     // Room methods
+    // Purpose: Displays the room title and description for the player's current location.
     public void displayRoom(Room room) {
 
         System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXX");
         System.out.println(room.getFullDescription());
     }
 
+    // Purpose: Lists all available exits so the player knows where they can travel next.
     public void displayExits(List<String> exits) {
         if (exits == null || exits.isEmpty()) {
             System.out.println("There are no available exits.");
@@ -134,6 +140,7 @@ public class GameView {
     // Player methods
 
     // Displays Player and StorageChest inventory
+    // Purpose: Prints the inventory contents so the player can see what they are carrying or storing.
     public void displayInventory(Inventory inventory, boolean isStorageChest) {
 
         if (inventory == null || inventory.isEmpty()) {
@@ -171,10 +178,12 @@ public class GameView {
         System.out.println();
     }
 
+    // Purpose: Shows the player's current and maximum HP for health tracking.
     public void displayHealth(Player player) {
         System.out.println("Current Health: " + player.getCurrentHP() + "/" + player.getMaxHP() + " HP");
     }
 
+    // Purpose: Displays the name and description of a picked item or room item to help with inspection.
     public void displayItem(Item item) {
         if (item == null) {
             System.out.println("Item cannot be inspected.");
@@ -188,6 +197,7 @@ public class GameView {
 
 
     // Combat
+    // Purpose: Shows the combat menu and the action options available during a battle turn.
     public void displayBattleMenu(int movesRemaining) {
 
         System.out.println();
@@ -204,6 +214,7 @@ public class GameView {
         System.out.println("EQUIP [ITEM]      - Switch equipped equipment.");
     }
 
+    // Purpose: Prints the enemy's stats and status for player inspection during combat.
     public void displayEnemyStats(Enemy enemy, String enemyStatus) {
 
         if (enemy == null) {
@@ -251,6 +262,7 @@ public class GameView {
 
 
     // Puzzles
+    // Purpose: Displays the current puzzle and any lock text when the required item is missing.
     public void displayPuzzle(Puzzle puzzle, boolean hasRequiredItem) {
 
         if (puzzle == null) {
@@ -275,3 +287,4 @@ public class GameView {
         }
     }
 }
+

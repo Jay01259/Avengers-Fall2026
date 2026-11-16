@@ -1,4 +1,4 @@
-package Model;
+﻿package Model;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -29,6 +29,7 @@ public class Room {
     private StorageChest chest;
 
     // add NPC back in when implemented
+    // Purpose: Creates a room with its world location, exits, contents, and puzzle metadata.
     public Room(String roomID, String name, String description, List<Item> items, List<Puzzle> puzzles,
                 /*List<NPC> npcs,*/ List<Enemy> enemies, String north, String east, String south, String west) {
         this.roomID = roomID;
@@ -54,10 +55,12 @@ public class Room {
     }
 
     //getters for Room attributes
+    // Purpose: Returns the list of items currently placed in the room.
     public List<Item> getItems() {
         return items;
     }
 
+    // Purpose: Returns the active puzzles tied to this room.
     public List<Puzzle> getPuzzles() {
         return puzzles;
     }
@@ -68,18 +71,22 @@ public class Room {
     }
      */
 
+    // Purpose: Returns enemies that are currently present in this room.
     public List<Enemy> getEnemies() {
         return enemies;
     }
 
+    // Purpose: Returns the room's unique identifier used for room lookups and transitions.
     public String getRoomID() {
         return roomID;
     }
 
+    // Purpose: Returns the human-readable room name shown in the game output.
     public String getName() {
         return name;
     }
 
+    // Purpose: Returns the room description read by the UI when the player inspects or enters a room.
     public String getDescription() {
         return description;
     }
@@ -100,36 +107,44 @@ public class Room {
         return west;
     }
 
+    // Purpose: Adds a room that can be visited from the current room via a special transition.
     public void addVisitRoom(String roomID) {
         visitRooms.add(roomID);
     }
 
+    // Purpose: Sets the destination used by the LEAVE command for a room that exits to another area.
     public void setLeaveTo(String roomID) {
         leaveTo = roomID;
     }
 
+    // Purpose: Locks the room behind a key requirement to match puzzle and progression logic.
     public void lockWithKey(String keyID) {
         locked = true;
         requiredKeyID = keyID;
     }
 
+    // Purpose: Locks the room behind a puzzle requirement so the player must solve a challenge first.
     public void lockWithPuzzle(String puzzleID) {
         locked = true;
         requiredPuzzleID = puzzleID;
     }
 
+    // Purpose: Adds a possible random drop or loot item that could appear in the room later.
     public void addRandomItem(Item item) {
         randomItems.add(item);
     }
 
+    // Purpose: Marks the room as one where random enemies can appear during world progression.
     public void setRandomEnemyRoom(boolean randomEnemyRoom) {
         this.randomEnemyRoom = randomEnemyRoom;
     }
 
+    // Purpose: Attaches a storage chest to the room so the player can store and retrieve items there.
     public void setChest(StorageChest chest) {
         this.chest = chest;
     }
 
+    // Purpose: Builds a detailed room description that includes any active puzzle information.
     public String getFullDescription() {
         String text = name + "\n" + description;
         if (hasUnsolvedPuzzle()) {
@@ -139,6 +154,7 @@ public class Room {
     }
 
 
+    // Purpose: Checks whether the given room ID is an allowed visit target from this room.
     public boolean canVisit(String roomID) {
         return visitRooms.contains(roomID);
     }
@@ -152,6 +168,7 @@ public class Room {
     }
 
 
+    // Purpose: Determines whether the player can pass through the room after checking key and puzzle requirements.
     public boolean isUnlocked(Player player) {
         if (!locked) {
             return true;
@@ -193,15 +210,18 @@ public class Room {
         return "You find: " + list;
     }
 
+    // Purpose: Adds an item to the room so it can be picked up or examined by the player.
     public void addItem(Item item) {
         items.add(item);
     }
 
+    // Purpose: Removes an item from the room when it is picked up, used, or otherwise no longer present.
     public void removeItem(Item item) {
         items.remove(item);
     }
 
 
+    // Purpose: Finds a room item by name so pickup and inspection commands can locate the correct object.
     public Item findItem(String itemName) {
         for (Item item : items) {
             if (item.getName().equalsIgnoreCase(itemName)) {
@@ -263,3 +283,4 @@ public class Room {
 
 
 }
+

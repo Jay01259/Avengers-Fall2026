@@ -1,4 +1,4 @@
-package Model;
+﻿package Model;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -16,6 +16,7 @@ public class GameWorld {
 
     private Random random;
 
+    // Purpose: Initializes the world containers for rooms, enemies, items, and puzzles before gameplay starts.
     public GameWorld() {
         rooms = new ArrayList<>();
         enemies = new ArrayList<>();
@@ -27,6 +28,7 @@ public class GameWorld {
     }
 
     // Room Methods
+    // Purpose: Looks up a room by its unique ID so the game can move the player or attach entities to it.
     public Room getRoomByID(String roomID) {
 
         if (roomID == null) {
@@ -40,6 +42,7 @@ public class GameWorld {
         return null;
     }
 
+    // Purpose: Finds a room by its display name when the game needs to access a location by label.
     public Room getRoomByName(String roomName) {
         if (roomName == null) {
             return null;
@@ -52,10 +55,12 @@ public class GameWorld {
         return null;
     }
 
+    // Purpose: Returns the starting room for the player when a new game begins.
     public Room getStartRoom() {
         return getRoomByID(startRoomID);
     }
 
+    // Purpose: Gets the room next to the current room using the direction provided by the player.
     public Room getAdjacentRoom(Room currentRoom, String direction) {
 
         if (currentRoom == null || direction == null) {
@@ -91,6 +96,7 @@ public class GameWorld {
         return getRoomByID(nextRoomID);
     }
 
+    // Purpose: Resolves a visit-room transition when the player uses a special room gateway.
     public Room getVisitRoom(Room currentRoom, String roomName) {
         if (currentRoom == null || roomName == null) {
             return null;
@@ -167,6 +173,7 @@ public class GameWorld {
 
 
     // ITEM METHODS
+    // Purpose: Finds a globally tracked item by its item ID so the world can manage shared item data.
     public Item getItemByID(String itemID) {
 
         if (itemID == null) {
@@ -184,6 +191,7 @@ public class GameWorld {
         return items;
     }
 
+    // Purpose: Selects a random item from a candidate list used for loot or treasure drops.
     public Item getRandomItem(List<Item> possibleItems) {
         if (possibleItems == null || possibleItems.isEmpty()) {
             return null;
@@ -232,6 +240,7 @@ public class GameWorld {
 
 
     // PUZZLE METHODS
+    // Purpose: Finds a puzzle in the world catalog by its unique puzzle ID.
     public Puzzle getPuzzleByID(String puzzleID) {
 
         if (puzzleID == null) {
@@ -245,6 +254,7 @@ public class GameWorld {
         return null;
     }
 
+    // Purpose: Gets the unsolved puzzle currently attached to a room so the player can interact with it.
     public Puzzle getPuzzleInRoom(Room room) {
         if (room == null) {
             return null;
@@ -319,3 +329,4 @@ public class GameWorld {
         return getRandomEnemy(room.getEnemies());
     }
 }
+
