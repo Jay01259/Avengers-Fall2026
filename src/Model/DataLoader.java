@@ -57,7 +57,6 @@ public class DataLoader {
                 String name = data[1].trim();
                 String description = data[2].replace("\\n", "\n");
 
-                // Exits, e.g. NORTH:R02,SOUTH:R04,EAST:R07 or VISIT:R08,VISIT:R09 or LEAVE:R23
                 String north = null;
                 String east = null;
                 String south = null;

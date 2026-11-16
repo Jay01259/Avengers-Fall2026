@@ -160,10 +160,10 @@ public class GameEngine {
             case "EXITS" : {
                 java.util.List<String> exits = new java.util.ArrayList<>();
 
-                if (currentRoom.getNorth() != null && !currentRoom.getNorth().isBlank()) exits.add("North - " + currentRoom.getNorth());
-                if (currentRoom.getSouth() != null && !currentRoom.getSouth().isBlank()) exits.add("South - " + currentRoom.getSouth());
-                if (currentRoom.getEast() != null && !currentRoom.getEast().isBlank()) exits.add("East - " + currentRoom.getEast());
-                if (currentRoom.getWest() != null && !currentRoom.getWest().isBlank()) exits.add("West - " + currentRoom.getWest());
+                if (currentRoom.getNorth() != null && !currentRoom.getNorth().isBlank()) exits.add("North");
+                if (currentRoom.getSouth() != null && !currentRoom.getSouth().isBlank()) exits.add("South");
+                if (currentRoom.getEast() != null && !currentRoom.getEast().isBlank()) exits.add("East");
+                if (currentRoom.getWest() != null && !currentRoom.getWest().isBlank()) exits.add("West");
 
                 for (String visit : currentRoom.getVisitRooms()) {
                     exits.add("Visit - " + visit);
