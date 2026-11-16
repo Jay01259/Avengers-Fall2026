@@ -18,6 +18,9 @@ import java.util.LinkedHashMap;
 import java.util.Properties;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.Locale;
+
+import Kelvin.*;
 
 public class DataLoader {
 
@@ -35,8 +38,188 @@ public class DataLoader {
     }
 
     public List<Item> loadItems() {
-        throw new UnsupportedOperationException(
-                "Item loading has not been implemented yet.");
+        try {
+            return readItemDefinitions();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e.getMessage(), e);
+        }
+    }
+
+    private List<Item> readItemDefinitions() throws IOException {
+        Path file = Paths.get(dataDirectory, "items.txt");
+        List<Item> items = new ArrayList<>();
+        Set<String> ids = new HashSet<>();
+        int lineNumber = 0;
+
+        try (BufferedReader reader =
+                     Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                line = combatLine(line, ++lineNumber);
+
+                if (line.isEmpty() || line.startsWith("#")) {
+                    continue;
+                }
+
+                String[] fields = line.split("\\|", -1);
+
+                if (fields.length != 9) {
+                    throw combatError(
+                            file,
+                            lineNumber,
+                            "Expected 9 pipe-separated item fields.");
+                }
+
+                for (int i = 0; i < fields.length; i++) {
+                    fields[i] = fields[i].trim();
+                }
+
+                if (fields[0].isEmpty()
+                        || fields[1].isEmpty()
+                        || fields[2].isEmpty()) {
+
+                    throw combatError(
+                            file,
+                            lineNumber,
+                            "Item ID, type, and name are required.");
+                }
+
+                if (!ids.add(fields[0])) {
+                    throw combatError(
+                            file,
+                            lineNumber,
+                            "Duplicate item ID: " + fields[0]);
+                }
+
+                items.add(createItem(file, lineNumber, fields));
+            }
+        }
+
+        if (items.isEmpty()) {
+            throw combatError(
+                    file,
+                    Math.max(1, lineNumber),
+                    "No item records. Add the official item data before loading.");
+        }
+
+        return items;
+    }
+
+    private static Item createItem(Path file, int lineNumber, String[] fields)
+            throws IOException {
+
+        String id = fields[0];
+        String type = fields[1].toUpperCase(Locale.ROOT);
+        String name = fields[2];
+        String description = fields[3].replace("\\n", "\n");
+        int valueSilver = parseItemInteger(
+                fields[4], 0, file, lineNumber, "valueSilver");
+        int statValue = parseItemInteger(
+                fields[5], Integer.MIN_VALUE, file, lineNumber, "statValue");
+        int durability = parseItemInteger(
+                fields[6], Integer.MIN_VALUE, file, lineNumber, "durability");
+        String rooms = fields[7];
+        String effect = fields[8];
+
+        switch (type) {
+            case "WEAPON":
+                return new Weapon(
+                        id,
+                        name,
+                        description,
+                        valueSilver,
+                        statValue,
+                        durability);
+
+            case "CONSUMABLE":
+                return new Consumable(
+                        id,
+                        name,
+                        description,
+                        valueSilver,
+                        statValue,
+                        Math.max(1, durability));
+
+            case "KEY":
+                String target = effect.startsWith("UNLOCKS:")
+                        ? effect.substring("UNLOCKS:".length()).trim()
+                        : effect;
+
+                if (target.contains(":")) {
+                    String[] pieces = target.split(":", 2);
+                    return new KeyItem(
+                            id,
+                            name,
+                            description,
+                            valueSilver,
+                            pieces[0].trim(),
+                            pieces[1].trim());
+                }
+
+                return new KeyItem(
+                        id,
+                        name,
+                        description,
+                        valueSilver,
+                        target,
+                        "");
+
+            case "ARMOR":
+                return new Armor(
+                        id,
+                        name,
+                        description,
+                        valueSilver,
+                        statValue,
+                        durability);
+
+            case "CHARM":
+            case "UTILITY":
+            case "VALUABLE":
+            case "CURRENCY":
+            case "TROPHY":
+            default:
+                Item item = new Item(id, name, description, valueSilver);
+
+                if (type.equals("CURRENCY")) {
+                    item.setStackable(true);
+                    item.setQuantity(Math.max(1, statValue));
+                }
+
+                if (!rooms.equals("-") && !rooms.isEmpty()) {
+                    item.setDescription(item.getDescription()
+                            + "\nLocations: " + rooms);
+                }
+
+                return item;
+        }
+    }
+
+    private static int parseItemInteger(
+            String text,
+            int minimum,
+            Path file,
+            int lineNumber,
+            String field) throws IOException {
+
+        try {
+            int value = Integer.parseInt(text);
+
+            if (value < minimum) {
+                throw new NumberFormatException();
+            }
+
+            return value;
+
+        } catch (NumberFormatException e) {
+            throw combatError(
+                    file,
+                    lineNumber,
+                    field + " must be a whole number >= "
+                            + minimum + ".");
+        }
     }
 
     public List<Enemy> loadEnemies() {
@@ -463,4 +646,4 @@ public class DataLoader {
         throw new UnsupportedOperationException(
                 "Game restoration has not been implemented yet.");
     }
-}}
+}

@@ -14,6 +14,8 @@ public class GameEngine {
     GameView view = new GameView();
     Battle currentBattle;
     DataLoader dataLoader = new DataLoader("data", "saves");
+    gameWorld = new GameWorld();
+    gameWorld.getItems().addAll(dataLoader.loadItems());
 
     public static void main(String[] args) {
         GameEngine gameEngine = new GameEngine();
