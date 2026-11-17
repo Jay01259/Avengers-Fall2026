@@ -66,7 +66,7 @@ public class GameView {
         System.out.println("SOLVE           - Check your puzzle solution.");
         System.out.println("RESET           - Reset the current puzzle.");
 
-        System.out.println("\nNPCs AND SHOPS");
+        System.out.println("\nNPCs AND SHOPS: Not Implemented");
         System.out.println("TALK [NPC]      - Talk to an NPC.");
         System.out.println("BUY [ITEM]      - Purchase an item.");
         System.out.println("SELL [ITEM]     - Sell an item.");
@@ -101,15 +101,19 @@ public class GameView {
     // Room methods
     public void displayRoom(Room room) {
 
+        System.out.println();
+        System.out.println();
         System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXX");
         System.out.println(room.getFullDescription());
     }
 
     public void displayExits(List<String> exits) {
         if (exits == null || exits.isEmpty()) {
+            System.out.println();
             System.out.println("There are no available exits.");
             return;
         }
+        System.out.println();
         System.out.println("Available exits:");
 
         for (String exit : exits) {
@@ -118,9 +122,11 @@ public class GameView {
     }
 
     public void displayRoomItems(List<Item> items) {
+        System.out.println();
         System.out.println("Items in this room:");
 
         if (items == null || items.isEmpty()) {
+            System.out.println();
             System.out.println("There are no items in this room.");
             return;
         }
@@ -139,16 +145,20 @@ public class GameView {
 
         if (inventory == null || inventory.isEmpty()) {
             if (isStorageChest) {
+                System.out.println();
                 System.out.println("The chest is empty.");
             } else {
+                System.out.println();
                 System.out.println("You have no items in your inventory");
             }
             return;
         }
 
         if (isStorageChest) {
+            System.out.println();
             System.out.print("Storage Chest: ");
         } else {
+            System.out.println();
             System.out.print("You currently have ");
         }
 
@@ -173,11 +183,13 @@ public class GameView {
     }
 
     public void displayHealth(Player player) {
+        System.out.println();
         System.out.println("Current Health: " + player.getCurrentHP() + "/" + player.getMaxHP() + " HP");
     }
 
     public void displayItem(Item item) {
         if (item == null) {
+            System.out.println();
             System.out.println("Item cannot be inspected.");
             return;
         }
@@ -208,9 +220,11 @@ public class GameView {
     public void displayEnemyStats(Enemy enemy, String enemyStatus) {
 
         if (enemy == null) {
+            System.out.println();
             System.out.println("There is no monster to inspect.");
             return;
         }
+        System.out.println();
         System.out.println("Enemy: " + enemy.getName());
         System.out.println("Current HP: " + enemy.getCurrentHP() + "/" + enemy.getMaxHP());
         System.out.println("Attack: " + enemy.getAttack());
@@ -242,6 +256,7 @@ public class GameView {
 
     public void displayBattleRewards(List<String> rewards) {
 
+        System.out.println();
         System.out.println("You've won the battle! Here are your spoils:");
 
         for (String reward : rewards) {
@@ -255,6 +270,7 @@ public class GameView {
     public void displayPuzzle(Puzzle puzzle, boolean hasRequiredItem) {
 
         if (puzzle == null) {
+            System.out.println();
             System.out.println("There is not a puzzle in this room.");
             return;
         }

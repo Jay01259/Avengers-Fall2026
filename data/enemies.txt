@@ -17,26 +17,26 @@
 # REGULAR ENEMIES
 # ==================================================
 
-M01|Mutated Falcon|Description pending|50|12|1|false|0|0|-
-M02|Mutated Snapping Tortoise|Description pending|40|8|5|false|0|0|-
-M03|Mutated Wolf|Description pending|75|15|0|false|0|0|-
+M01|Mutated Falcon|A flying enemy with large, powerful wings and razor sharp talons|50|12|1|false|0|0|-
+M02|Mutated Snapping Tortoise|A land reptile with a very sturdy shell, helping it mitigate damage effectively|40|8|5|false|0|0|-
+M03|Mutated Wolf|A highly dangerous canine that prefers aggressive and swift attacks to take down its prey|75|15|0|false|0|0|-
 
 # ==================================================
 # MINI-BOSSES
 # ==================================================
 
-M04|Mutated Black Widow|Description pending|350|20|8|true|0|0|-
-M05|Phantom Walker|Description pending|300|30|4|true|0|0|-
+M04|Mutated Black Widow|An arachnid monster whose size is enormous. Prefers wearing down its prey before delivering the fatal blow|350|20|8|true|0|0|-
+M05|Phantom Walker|The soul of a powerful warrior hailing from Caine Drux University, now forever doomed to wander the wilds|300|30|4|true|0|0|-
 
 # ==================================================
 # ADDITIONAL ENEMIES
 # ==================================================
 
-M06|CDU Guard|Description pending|150|20|5|false|0|0|-
-M07|Thief|Description pending|150|20|10|false|0|0|-
+M06|CDU Guard|A highly trained guard of Caine Drux University. Has strong combat prowess|150|20|5|false|0|0|-
+M07|Thief|Highly skilled at evasion and will use underhanded tactics to gain the upper hand. Watch out for their tricks!|150|20|10|false|0|0|-
 
 # ==================================================
 # FINAL BOSS
 # ==================================================
 
-M08|Father of Beasts|Description pending|1000|30|10|true|0|0|-
+M08|Father of Beasts|The Father of Beasts is tall and dark-skinned. His body is a hybrid between a human and a dragon, complete with dragon scales that permeate his entire body, acting \nas armor. His head resembles a dragon head, but his face is that of a human’s. He wields a greatsword in combat; a giant, green eye fashions itself at the hilt|1000|30|10|true|0|0|-

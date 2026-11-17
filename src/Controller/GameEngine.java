@@ -14,6 +14,7 @@ public class GameEngine {
     GameView view = new GameView();
     Battle currentBattle;
     DataLoader dataLoader = new DataLoader("data", "saves");
+
     public static void main(String[] args) {
         GameEngine gameEngine = new GameEngine();
         gameEngine.startGame();
@@ -158,25 +159,57 @@ public class GameEngine {
                 view.displayHelp();
                 return;
             }
-            case "EXITS" : {
+
+            case "EXITS": {
                 java.util.List<String> exits = new java.util.ArrayList<>();
 
-                if (currentRoom.getNorth() != null && !currentRoom.getNorth().isBlank()) exits.add("North");
-                if (currentRoom.getSouth() != null && !currentRoom.getSouth().isBlank()) exits.add("South");
-                if (currentRoom.getEast() != null && !currentRoom.getEast().isBlank()) exits.add("East");
-                if (currentRoom.getWest() != null && !currentRoom.getWest().isBlank()) exits.add("West");
+                // Directional exits
+                Room northRoom = gameWorld.getRoomByID(currentRoom.getNorth());
+                Room southRoom = gameWorld.getRoomByID(currentRoom.getSouth());
+                Room eastRoom = gameWorld.getRoomByID(currentRoom.getEast());
+                Room westRoom = gameWorld.getRoomByID(currentRoom.getWest());
 
+                if (northRoom != null) {
+                    exits.add("North - " + northRoom.getName());
+                }
+
+                if (southRoom != null) {
+                    exits.add("South - " + southRoom.getName());
+                }
+
+                if (eastRoom != null) {
+                    exits.add("East - " + eastRoom.getName());
+                }
+
+                if (westRoom != null) {
+                    exits.add("West - " + westRoom.getName());
+                }
+
+                // Visit-based exits
                 for (String visit : currentRoom.getVisitRooms()) {
-                    exits.add("Visit - " + visit);
+                    Room visitRoom = gameWorld.getRoomByID(visit);
+
+                    if (visitRoom != null) {
+                        exits.add("Visit - " + visitRoom.getName());
+                    }
                 }
 
-                if (currentRoom.getLeaveTo() != null && !currentRoom.getLeaveTo().isBlank()) {
-                    exits.add("Leave - " + currentRoom.getLeaveTo());
+                // Leave-based exit
+                if (currentRoom.getLeaveTo() != null &&
+                        !currentRoom.getLeaveTo().isBlank()) {
+
+                    Room leaveRoom = gameWorld.getRoomByID(currentRoom.getLeaveTo());
+
+                    if (leaveRoom != null) {
+                        exits.add("Leave - " + leaveRoom.getName());
+                    }
                 }
 
+                view.displayMessage("Exits from " + currentRoom.getName() + ":");
                 view.displayExits(exits);
                 return;
             }
+
             case "INVENTORY" : {
                 view.displayInventory(player.getInventory(), false);
                 return;
@@ -710,6 +743,10 @@ public class GameEngine {
             }
 
             view.displayBattleRewards(rewards);
+            // Check whether the final boss has been defeated.
+            if ("M08".equals(enemy.getEnemyID())) {
+                finishGame();
+            }
         } else if (currentBattle.getOutcome() == Battle.Outcome.DEFEAT) {
             view.displayMessage("You've fallen in battle...");
             gameRunning = false;
