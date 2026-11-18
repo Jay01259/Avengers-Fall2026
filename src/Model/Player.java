@@ -178,11 +178,23 @@ public class Player extends Character {
         }
 
         if (item instanceof Weapon) {
-            equippedWeapon = (Weapon) item;
+            Weapon weapon = (Weapon) item;
+
+            if (weapon.isBroken()) {
+                return false;
+            }
+
+            equippedWeapon = weapon;
             return true;
         }
         else if (item instanceof Armor) {
-            equippedArmor = (Armor) item;
+            Armor armor = (Armor) item;
+
+            if (armor.isBroken()) {
+                return false;
+            }
+
+            equippedArmor = armor;
             return true;
         }
 

@@ -23,7 +23,7 @@ public class Battle {
     private final int movesPerTurn;
     private final double baseFleeChance;
     private final double fleeIncrease;
-    private final int baseDefense;
+    private int baseDefense;
 
     private final String[] skillNames = new String[2];
     private final int[] cooldowns = new int[2];
@@ -120,6 +120,15 @@ public class Battle {
 
     public int getBaseDefense() {
         return baseDefense;
+    }
+
+    public void setBaseDefense(int baseDefense) {
+        int newDefense = Math.max(0, baseDefense);
+
+        int difference = newDefense - this.baseDefense;
+
+        this.baseDefense = newDefense;
+        this.playerDefense = Math.max(0, this.playerDefense + difference);
     }
 
     public int getPlayerDefense() {

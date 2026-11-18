@@ -308,6 +308,7 @@ public class GameWorld {
 
     // Might have to change after Fabian adjusts the random encounter system
     public Enemy getRandomEncounter(Room room) {
+
         if (room == null || !room.isRandomEnemyRoom()) {
             return null;
         }
@@ -316,6 +317,14 @@ public class GameWorld {
             return null;
         }
 
-        return getRandomEnemy(room.getEnemies());
+        List<Enemy> availableEnemies = new ArrayList<>();
+
+        for (Enemy enemy : enemies) {
+            if (!enemy.isBoss() && enemy.isAlive()) {
+                availableEnemies.add(enemy);
+            }
+        }
+
+        return getRandomEnemy(availableEnemies);
     }
 }

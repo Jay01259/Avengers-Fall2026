@@ -71,7 +71,8 @@ public class GameEngine {
             for (Enemy enemy : dataLoader.loadEnemies()) {
                 gameWorld.addEnemy(enemy);
             }
-        } catch (RuntimeException ignored) {
+        } catch (RuntimeException e) {
+            view.displayMessage("Error loading enemies: " + e.getMessage());
         }
 
         try {
@@ -294,6 +295,7 @@ public class GameEngine {
                 player.setCurrentRoom(leaveRoom);
                 player.markRoomVisited(leaveRoom.getRoomID());
                 view.displayRoom(leaveRoom);
+                checkForEncounter(leaveRoom);
                 return;
             }
             case "QUIT" : {
@@ -358,6 +360,7 @@ public class GameEngine {
                 player.setCurrentRoom(target);
                 player.markRoomVisited(target.getRoomID());
                 view.displayRoom(target);
+                checkForEncounter(target);
                 return;
             }
 
@@ -629,14 +632,10 @@ public class GameEngine {
                     return;
                 }
 
-                int raw = player.getAttack();
-                if (player.getEquippedWeapon() != null) {
-                    raw += player.getEquippedWeapon().getAttackBonus();
-                }
+                int dealt = performRegularAttack();
 
-                int dealt = currentBattle.regularAttack(raw);
-                view.displayMessage(dealt + " damage was dealt to " +
-                        currentBattle.getEnemy().getName() + "!");
+                view.displayMessage(dealt + " damage was dealt to "
+                        + currentBattle.getEnemy().getName() + "!");
                 return;
             }
 
@@ -680,13 +679,10 @@ public class GameEngine {
                 view.displayBattleMenu(currentBattle.getMovesRemaining());
                 String input = scanner.nextLine().trim();
 
-                if (input.equalsIgnoreCase("attack")) {
-                    int raw = player.getAttack();
-                    if (player.getEquippedWeapon() != null) {
-                        raw += player.getEquippedWeapon().getAttackBonus();
-                    }
+                if (input.equalsIgnoreCase("attack") || input.equalsIgnoreCase("attack " + enemy.getName())) {
 
-                    int dealt = currentBattle.regularAttack(raw);
+                    int dealt = performRegularAttack();
+
                     view.displayMessage(dealt + " damage was dealt to " + enemy.getName() + "!");
                 } else if (input.equalsIgnoreCase("flee")) {
                     if (currentBattle.attemptFlee()) {
@@ -699,10 +695,68 @@ public class GameEngine {
                             view.displayMessage("You couldn't flee from battle. Try again!");
                         }
                     }
-                } else if (input.equalsIgnoreCase("inspect") || input.equalsIgnoreCase("inspect monster")) {
+                } else if (input.equalsIgnoreCase("inspect") || input.equalsIgnoreCase("inspect monster") ||
+                        input.equalsIgnoreCase("inspect " + enemy.getName())) {
                     view.displayEnemyStats(enemy, enemy.getStatusHint());
                 } else if (input.equalsIgnoreCase("inventory")) {
                     view.displayInventory(player.getInventory(), false);
+
+                } else if (input.toLowerCase().startsWith("use ")) {
+
+                    String itemName = input.substring(4).trim();
+
+                    Item item = player.getInventory().getItem(itemName);
+
+                    if (item == null) {
+                        view.displayMessage("You do not have that item.");
+                    } else if (!(item instanceof Consumable)) {
+                        view.displayMessage("You cannot use that item during battle.");
+                    } else {
+
+                        int beforeHP = player.getCurrentHP();
+
+                        boolean used = player.useItem(item, 1);
+
+                        if (used) {
+                            int healed = player.getCurrentHP() - beforeHP;
+
+                            view.displayMessage("You used " + item.getName() + ".");
+
+                            if (healed > 0) {
+                                view.displayMessage("You recovered " + healed + " HP.");
+                            }
+
+                            currentBattle.recordPlayerMove();
+
+                        } else {
+                            view.displayMessage("That item cannot be used right now.");
+                        }
+                    }
+                } else if (input.toLowerCase().startsWith("equip ")) {
+
+                    String itemName = input.substring(6).trim();
+
+                    Item item = player.getInventory().getItem(itemName);
+
+                    if (item == null) {
+                        view.displayMessage("That item is not in your inventory.");
+                    } else if (player.equipItem(item)) {
+
+                        int newDefense = player.getDefense();
+
+                        if (player.getEquippedArmor() != null) {
+                            newDefense += player.getEquippedArmor().getDefenseBonus();
+                        }
+
+                        currentBattle.setBaseDefense(newDefense);
+
+                        currentBattle.recordPlayerMove();
+
+                        view.displayMessage(item.getName() + " equipped.");
+
+                    } else {
+                        view.displayMessage("That item cannot be equipped.");
+                    }
                 } else {
                     view.displayMessage("Invalid battle command.");
                 }
@@ -711,15 +765,34 @@ public class GameEngine {
                     view.displayMessage("Moves remaining: " + currentBattle.getMovesRemaining());
                 }
             } else {
+
                 currentBattle.enemyTurn(b -> {
                     int raw = Battle.rawDamageFromAttack(enemy.getAttack(), 100, java.math.RoundingMode.HALF_UP);
+
+                    Armor armor = player.getEquippedArmor();
+
                     int dealt = b.damagePlayer(raw);
 
                     view.displayMessage(enemy.getName() + " is using a Regular Attack!");
+
                     if (dealt > 0) {
                         view.displayMessage(dealt + " damage was dealt to " + player.getName() + "!");
                     }
+
+                    if (armor != null) {
+                        armor.takeHit();
+
+                        if (armor.isBroken()) {
+                            player.getInventory().removeItem(armor);
+                            player.setEquippedArmor(null);
+
+                            b.setBaseDefense(player.getDefense());
+
+                            view.displayMessage(armor.getName() + " has broken and disappeared from your inventory!");
+                        }
+                    }
                 });
+
             }
         }
 
@@ -853,6 +926,8 @@ public class GameEngine {
         player.setCurrentRoom(nextRoom);
         player.markRoomVisited(nextRoom.getRoomID());
         view.displayRoom(nextRoom);
+
+        checkForEncounter(nextRoom);
     }
 
 
@@ -991,5 +1066,58 @@ public class GameEngine {
         }
 
         saveGame(saveName);
+    }
+
+    private void checkForEncounter(Room room) {
+
+        if (room == null || player == null) {
+            return;
+        }
+
+        // Final boss encounter
+        if (room.getRoomID().equals("R27")) {
+
+            Enemy boss = gameWorld.getEnemyByID("M08");
+
+            if (boss != null && boss.isAlive()) {
+                battleLoop(boss);
+            }
+
+            return;
+        }
+
+        // Random encounters
+        Enemy enemy = gameWorld.getRandomEncounter(room);
+
+        if (enemy != null) {
+            battleLoop(enemy);
+        }
+    }
+
+    private int performRegularAttack() {
+
+        Weapon weapon = player.getEquippedWeapon();
+
+        int raw = player.getAttack();
+
+        if (weapon != null) {
+            raw += weapon.getAttackBonus();
+        }
+
+        int dealt = currentBattle.regularAttack(raw);
+
+        if (weapon != null) {
+            weapon.useTurn();
+
+            if (weapon.isBroken()) {
+                player.getInventory().removeItem(weapon);
+                player.setEquippedWeapon(null);
+
+                view.displayMessage(weapon.getName()
+                        + " has broken and disappeared from your inventory!");
+            }
+        }
+
+        return dealt;
     }
 }
