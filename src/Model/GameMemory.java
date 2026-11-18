@@ -1,3 +1,4 @@
+
 package Model;
 
 public class GameMemory {
@@ -25,49 +26,61 @@ public class GameMemory {
     }
 
     public boolean isValid() {
-        return saveName != null && !saveName.isEmpty() && player != null && gameWorld != null;
+        return saveName != null && !saveName.isEmpty()
+                && player != null && gameWorld != null;
     }
 
     public String toText() {
-
-        // Check whether the game can be saved.
-        if (!isValid() || player.getInventory() == null || player.getCurrentRoom() == null) {
+        if (!isValid() || player.getInventory() == null
+                || player.getCurrentRoom() == null) {
             return "";
         }
 
         StringBuilder text = new StringBuilder();
 
-        // Save information
-        text.append("SAVE_NAME|").append(saveName).append('\n');
+        text.append("SAVE_NAME|")
+                .append(saveName).append('\n');
 
-        // Player information
-        text.append("PLAYER_NAME|").append(player.getName()).append('\n');
-        text.append("CURRENT_HP|").append(player.getCurrentHP()).append('\n');
-        text.append("MAX_HP|").append(player.getMaxHP()).append('\n');
-        text.append("ATTACK|").append(player.getAttack()).append('\n');
-        text.append("DEFENSE|").append(player.getDefense()).append('\n');
+        text.append("PLAYER_NAME|")
+                .append(player.getName()).append('\n');
 
-        // Current room
-        text.append("CURRENT_ROOM|").append(player.getCurrentRoom().getRoomID()).append('\n');
+        text.append("CURRENT_HP|")
+                .append(player.getCurrentHP()).append('\n');
 
-        // Currency
-        text.append("SILVER_COINS|").append(player.getSilverCoins()).append('\n');
-        text.append("GOLD_COINS|").append(player.getGoldCoins()).append('\n');
+        text.append("MAX_HP|")
+                .append(player.getMaxHP()).append('\n');
 
-        // Game completion
-        text.append("GAME_COMPLETED|").append(player.isGameCompleted()).append('\n');
+        text.append("ATTACK|")
+                .append(player.getAttack()).append('\n');
 
-        // Equipped equipment
-        String weaponID = player.getEquippedWeapon() == null ? "" : player.getEquippedWeapon().getId();
+        text.append("DEFENSE|")
+                .append(player.getDefense()).append('\n');
 
-        String armorID = player.getEquippedArmor() == null ? "" : player.getEquippedArmor().getId();
+        text.append("CURRENT_ROOM|")
+                .append(player.getCurrentRoom().getRoomID()).append('\n');
 
-        text.append("EQUIPPED_WEAPON|").append(weaponID).append('\n');
-        text.append("EQUIPPED_ARMOR|").append(armorID).append('\n');
+        text.append("SILVER_COINS|")
+                .append(player.getSilverCoins()).append('\n');
 
-        // Inventory
+        text.append("GOLD_COINS|")
+                .append(player.getGoldCoins()).append('\n');
+
+        text.append("GAME_COMPLETED|")
+                .append(player.isGameCompleted()).append('\n');
+
+        String weaponID = player.getEquippedWeapon() == null
+                ? "" : player.getEquippedWeapon().getId();
+
+        String armorID = player.getEquippedArmor() == null
+                ? "" : player.getEquippedArmor().getId();
+
+        text.append("EQUIPPED_WEAPON|")
+                .append(weaponID).append('\n');
+
+        text.append("EQUIPPED_ARMOR|")
+                .append(armorID).append('\n');
+
         for (Item item : player.getInventory()) {
-
             if (item == null || item.getId() == null) {
                 continue;
             }
@@ -78,33 +91,41 @@ public class GameMemory {
             if (item instanceof Weapon) {
                 itemType = "WEAPON";
                 itemState = ((Weapon) item).getAttackCounter();
-            }
-            else if (item instanceof Armor) {
+
+            } else if (item instanceof Armor) {
                 itemType = "ARMOR";
                 itemState = ((Armor) item).getHitsTakenCounter();
-            }
-            else if (item instanceof Consumable) {
+
+            } else if (item instanceof Consumable) {
                 itemType = "CONSUMABLE";
-            }
-            else if (item instanceof KeyItem) {
+
+            } else if (item instanceof KeyItem) {
                 itemType = "KEY_ITEM";
             }
 
-            text.append("INVENTORY_ITEM|").append(item.getId()).append('|').append(itemType).append('|')
-                    .append(item.getQuantity()).append('|').append(itemState).append('\n');
+            text.append("INVENTORY_ITEM|")
+                    .append(item.getId()).append('|')
+                    .append(itemType).append('|')
+                    .append(item.getQuantity()).append('|')
+                    .append(itemState).append('\n');
         }
 
-        // Visited rooms
         for (String roomID : player.getVisitedRoomsIDs()) {
-            text.append("VISITED_ROOM|").append(roomID).append('\n');
+            text.append("VISITED_ROOM|")
+                    .append(roomID).append('\n');
         }
 
-        // Completed puzzles
         for (Puzzle puzzle : gameWorld.getPuzzles()) {
-
             if (puzzle != null && puzzle.isCompleted()) {
                 text.append("COMPLETED_PUZZLE|")
                         .append(puzzle.getPuzzleID()).append('\n');
+            }
+        }
+
+        for (Enemy enemy : gameWorld.getEnemies()) {
+            if (enemy != null && enemy.isDefeated()) {
+                text.append("DEFEATED_ENEMY|")
+                        .append(enemy.getEnemyID()).append('\n');
             }
         }
 

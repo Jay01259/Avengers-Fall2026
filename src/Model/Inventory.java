@@ -1,3 +1,4 @@
+
 package Model;
 
 import java.lang.reflect.Method;
@@ -6,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Inventory implements Iterable<Item> {
+
     public static final int BASE_CAPACITY = 6;
     public static final int SATCHEL_CAPACITY = 10;
 
@@ -58,20 +60,24 @@ public class Inventory implements Iterable<Item> {
     }
 
     public int getEffectiveCapacity() {
-        return hasLeatherSatchel() ? SATCHEL_CAPACITY : maxCapacity;
+        return hasLeatherSatchel()
+                ? SATCHEL_CAPACITY : maxCapacity;
     }
 
     public int getFreeSpace() {
-        return Math.max(0, getEffectiveCapacity() - getUsedSlots());
+        return Math.max(
+                0, getEffectiveCapacity() - getUsedSlots());
     }
 
     public int getUsedSlots() {
         int used = 0;
+
         for (Item item : items) {
             if (item != null && !item.isKey()) {
                 used++;
             }
         }
+
         return used;
     }
 
@@ -79,16 +85,18 @@ public class Inventory implements Iterable<Item> {
         return items.isEmpty();
     }
 
-
     public boolean hasLeatherSatchel() {
         for (Item item : items) {
-            if (item != null && "LEATHER_SATCHEL".equalsIgnoreCase(item.getId())) {
+            if (item != null
+                    && ("W10".equalsIgnoreCase(item.getId())
+                    || "LEATHER_SATCHEL".equalsIgnoreCase(
+                    item.getId()))) {
                 return true;
             }
         }
+
         return false;
     }
-
 
     public boolean addItem(Item item) {
         if (item == null) {
@@ -102,6 +110,7 @@ public class Inventory implements Iterable<Item> {
 
         if (item.isStackable()) {
             Item existing = findMatchingStack(item);
+
             if (existing != null) {
                 existing.addQuantity(item.getQuantity());
                 return true;
@@ -125,11 +134,13 @@ public class Inventory implements Iterable<Item> {
             if (item == null) {
                 continue;
             }
+
             if (identifier.equalsIgnoreCase(item.getId())
                     || identifier.equalsIgnoreCase(item.getName())) {
                 return item;
             }
         }
+
         return null;
     }
 
@@ -137,9 +148,13 @@ public class Inventory implements Iterable<Item> {
         if (item == null) {
             return false;
         }
-        return getItem(item.getId() != null && !item.getId().trim().isEmpty()
-                ? item.getId()
-                : item.getName()) != null;
+
+        return getItem(
+                item.getId() != null
+                        && !item.getId().trim().isEmpty()
+                        ? item.getId()
+                        : item.getName()
+        ) != null;
     }
 
     public Item removeItem(String identifier) {
@@ -149,20 +164,24 @@ public class Inventory implements Iterable<Item> {
 
         for (int i = 0; i < items.size(); i++) {
             Item item = items.get(i);
+
             if (item == null) {
                 continue;
             }
 
             if (identifier.equalsIgnoreCase(item.getId())
                     || identifier.equalsIgnoreCase(item.getName())) {
+
                 if (item.isStackable() && item.getQuantity() > 1) {
                     item.removeQuantity(1);
                     return item;
                 }
+
                 items.remove(i);
                 return item;
             }
         }
+
         return null;
     }
 
@@ -170,9 +189,13 @@ public class Inventory implements Iterable<Item> {
         if (item == null) {
             return null;
         }
-        return removeItem(item.getId() != null && !item.getId().trim().isEmpty()
-                ? item.getId()
-                : item.getName());
+
+        return removeItem(
+                item.getId() != null
+                        && !item.getId().trim().isEmpty()
+                        ? item.getId()
+                        : item.getName()
+        );
     }
 
     public boolean openChest(Object player) {
@@ -180,6 +203,7 @@ public class Inventory implements Iterable<Item> {
             chestOpen = true;
             return true;
         }
+
         return false;
     }
 
@@ -192,13 +216,17 @@ public class Inventory implements Iterable<Item> {
         if (!chestOpen || !isPlayerInRoom(player, "R01")) {
             return false;
         }
+
         return addItem(item);
     }
 
-    public Item retrieveItem(Object player, String identifier) {
+    public Item retrieveItem(
+            Object player, String identifier) {
+
         if (!chestOpen || !isPlayerInRoom(player, "R01")) {
             return null;
         }
+
         return removeItem(identifier);
     }
 
@@ -207,31 +235,44 @@ public class Inventory implements Iterable<Item> {
             if (existing == null) {
                 continue;
             }
-            if (existing.isStackable() && item.isStackable() && existing.matches(item)) {
+
+            if (existing.isStackable()
+                    && item.isStackable()
+                    && existing.matches(item)) {
                 return existing;
             }
         }
+
         return null;
     }
 
-    private boolean isPlayerInRoom(Object player, String expectedRoomId) {
+    private boolean isPlayerInRoom(
+            Object player, String expectedRoomId) {
+
         if (player == null) {
             return false;
         }
 
         try {
-            Method getCurrentRoomMethod = player.getClass().getMethod("getCurrentRoom");
+            Method getCurrentRoomMethod =
+                    player.getClass().getMethod("getCurrentRoom");
+
             Object room = getCurrentRoomMethod.invoke(player);
 
             if (room == null) {
                 return false;
             }
 
-            Method getRoomIdMethod = room.getClass().getMethod("getRoomID");
+            Method getRoomIdMethod =
+                    room.getClass().getMethod("getRoomID");
+
             Object roomIdValue = getRoomIdMethod.invoke(room);
 
-            String roomId = roomIdValue == null ? "" : roomIdValue.toString();
+            String roomId = roomIdValue == null
+                    ? "" : roomIdValue.toString();
+
             return expectedRoomId.equalsIgnoreCase(roomId);
+
         } catch (Exception e) {
             return false;
         }
@@ -242,4 +283,3 @@ public class Inventory implements Iterable<Item> {
         return items.iterator();
     }
 }
-

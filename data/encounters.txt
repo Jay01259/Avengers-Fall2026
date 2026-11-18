@@ -1,0 +1,9 @@
+# ROOM_ID|ENEMY_ID,ENEMY_ID
+# The Armory CDU Guard and final cave boss are referenced in the team demo notes.
+# The other placements below are PROVISIONAL demo assignments: verify with SRS.
+# The random-encounter rooms are identified by rooms.txt and use a 50% entry roll.
+R14|M06
+R18|M01,M02
+R21|M03,M07
+R25|M01,M02,M03,M04,M05,M07
+R27|M08
